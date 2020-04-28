@@ -1,8 +1,7 @@
 import {useCallback} from "react"
 
-/**
- * # React hooks
- */
+// ## React hooks
+
 
 export {
   useContext,
@@ -15,9 +14,8 @@ export {
 
 export const useCb = useCallback
 
-/**
- * # React web only hook mocks
- */
+// ## React web only hook mocks
+
 
 export const useFocus = () => {}
 export const useHover = () => {}

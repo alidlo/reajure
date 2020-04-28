@@ -1,14 +1,10 @@
 import {h} from "react-hype"
 import * as rn from "../native-deps"
 import * as r from "../react"
-import * as l from "../lib"
+import * as l from "../lang"
 import * as sh from "../styles/stylesheet"
 
-/**
- * # React-native Built-in Components.
- * 
- * For touch components, we use react-native-gesture-handler instead.
- */
+// ### React native components
 
 const vw = h.wrap(rn.View)
 
@@ -22,9 +18,7 @@ const tch = h.wrap(rn.Touchable)
 export type TextInputProps = rn.TextInput["props"]
 const txtIpt = h.wrap(rn.TextInput)
 
-/**
- * # Component Factory
- */
+// ## Component Factory
 
 type Options = {btn: ButtonOptions,
                 lnk: LinkOptions,
@@ -43,9 +37,8 @@ export function createComponents(sh: sh.Stylesheet,
           lnk: createLink(sh, opts.lnk),
           ipt: createInput(sh, opts.ipt)}}
   
-/**
- * # Button Component 
- */
+
+// ### Button Component 
 
 export type ButtonOptions = {style?: sh.ViewStyle,
                              textStyle?: sh.TextStyle,
@@ -74,9 +67,8 @@ function createButton(sh: sh.Stylesheet,
          style}, 
         txt({style: textStyle}, p.children))})}
 
-/**
- * # Label Component
- */
+
+// ### Label Component
 
 export type LabelProps = {style?: sh.ViewStyle,
                           textStyle?: sh.TextStyle}
@@ -87,9 +79,7 @@ function createLabel(sh: sh.Stylesheet) {
       {style: sh.vw(p.style)},
       txt({style: sh.txt(p.textStyle)}, p.children))})}
         
-/**
- * # Link Component
- */
+// ### Link Component
 
 export type LinkOptions = {style?: sh.TextStyle}
 
@@ -108,9 +98,8 @@ function createLink(sh: sh.Stylesheet, opts: LinkOptions) {
         p.children)},
     true)}
 
-/**
- * # Input Component 
- */    
+// ### Input Component 
+ 
 
 export type InputOptions = {style?: sh.ViewStyle,
                             focusStyle?: sh.ViewStyle,

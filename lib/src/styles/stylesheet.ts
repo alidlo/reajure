@@ -1,7 +1,7 @@
 import {StyleSheet,
         ViewStyle as RnViewStyle, 
         TextStyle as RnTextStyle} from "react-native"
-import * as l from "../lib"
+import * as l from "../lang"
 import * as rn from "../native-deps"
 
 export type StylesheetFactory = typeof StyleSheet["create"]
@@ -12,9 +12,7 @@ export type NativeStyles = NativeViewStyles | NativeTextStyles
 
 export type CustomStyle<Key extends string> = {[k in Key]: NativeStyles}
 
-/**
- * Stylesheet factory
- */
+// ## Stylesheet factory
 
 export type StyleKey = (ViewStyleKey | TextStyleKey)
 export type Styles = (ViewStyles | TextStyles)
@@ -63,9 +61,7 @@ function ensureObjOrKv(v: string | object | boolean, ...objs: object[]) {
   if (!kv) throw Error(`Stylesheet key "${v}" does not exist`)
   return kv}
 
-/**
- * View stylesheet factory
- */
+// ### View stylesheet factory
 
 export type ViewStyleKey = (FlexStyleKey | 
                             PositionStyleKey |
@@ -96,9 +92,7 @@ export function createViewStyle(shf: StylesheetFactory,
           ...borderStyles,
           ...opacStyles}}
 
-/**
- * Text stylesheet factory
- */
+// ### Text stylesheet factory
 
 export type TextStyleKey = (FontStyleKey)
 
@@ -109,9 +103,8 @@ export function createTextStyles(shf: StylesheetFactory,
   const fontStyles = createFontStyles(shf, opts.rem)
   return {...fontStyles}}
 
-/**
- * View and Text stylesheet modules
- */
+// ### View and Text stylesheet modules
+
 
 /* Flex styles (view only) */
 

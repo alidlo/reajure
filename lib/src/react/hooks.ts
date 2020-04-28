@@ -2,10 +2,8 @@ import * as R from "react"
 import * as RDOM from "react-dom"
 import * as rn from "../native-deps"
 
-/**
- * # React hooks
- */
-
+// ## React hooks
+ 
 export {
   useContext,
   useRef,
@@ -18,9 +16,7 @@ export {
 export const useCtx = R.useContext
 export const useCb = R.useCallback
 
-/**
- * # React web only hooks 
- */
+// ## React web only hooks
 
 export const useFocus = 
   createPseudoHook({events: ["focus", "blur"],}) as 

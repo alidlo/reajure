@@ -1,4 +1,4 @@
-import {createStylesheet} from "../styles"
+import {createStylesheet} from "../src/styles"
 
 const sh = createStylesheet()
 
