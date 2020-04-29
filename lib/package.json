@@ -14,7 +14,7 @@
     "react-native"
   ],
   "scripts": {
-    "watch": "tsc -b -w",
+    "watch": "tsc -b -w tsconfig.build.json",
     "prepare": "del dist && bob build"
   },
   "@react-native-community/bob": {
@@ -39,7 +39,7 @@
     "react-native-web": "0.0.0-26873b469"
   },
   "dependencies": {
-    "react-hype": "0.3.7"
+    "react-hype": "0.3.9"
   },
   "devDependencies": {
     "@react-native-community/bob": "^0.8.0",

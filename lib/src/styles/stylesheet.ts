@@ -4,37 +4,40 @@ import {StyleSheet,
 import * as l from "../lang"
 import * as rn from "../native-deps"
 
+
+// ## Stylesheet Factory
+// note: `Style`, `ViewStyle` and `TextStyle` are optionally arrays because that's the only way
+// there typings could be easily passed as props and consumed by the same `sh` factory helpers.
+
 export type StylesheetFactory = typeof StyleSheet["create"]
+export type CustomStyle<Key extends string> = {[k in Key]: NativeStyles}
 
 export type NativeViewStyles = RnViewStyle 
 export type NativeTextStyles = RnTextStyle
 export type NativeStyles = NativeViewStyles | NativeTextStyles
-
-export type CustomStyle<Key extends string> = {[k in Key]: NativeStyles}
-
-// ## Stylesheet factory
-
+   
 export type StyleKey = (ViewStyleKey | TextStyleKey)
-export type Styles = (ViewStyles | TextStyles)
+export type StyleObj = (ViewStyleObj | TextStyleObj)
 
-export type Style = 
-  (StyleKey | Styles | NativeStyles | boolean)
+export type ViewStyleOption = (ViewStyleKey | ViewStyleObj | NativeViewStyles | boolean)
+export type ViewStyle = ViewStyleOption | ViewStyleOption[]
 
-export type ViewStyle = 
-  (ViewStyleKey | ViewStyles | NativeViewStyles | boolean)
+export type TextStyleOption = (TextStyleKey | TextStyleObj | NativeTextStyles | boolean)
+export type TextStyle = TextStyleOption | TextStyleOption[]
 
-export type TextStyle = 
-  (TextStyleKey | TextStyles | NativeTextStyles | boolean)
+export type StyleOption = (StyleKey | StyleObj | NativeStyles | boolean)
+export type Style = StyleOption | StyleOption[]
 
 export type Stylesheet = 
   {(...vs: Style[]): NativeStyles[]
+   all:  (...vs: Style[]) => NativeStyles[] 
    vw:  (...vs: ViewStyle[]) => NativeStyles[]
    txt: (...vs: TextStyle[]) => NativeStyles[]}
-
+   
 type Options = {rem: number}
-
+   
 export const defaultOptions = {rem: 16}
-
+   
 export function createStylesheet(opts: Options = defaultOptions): Stylesheet {
   const shf: StylesheetFactory = rn.StyleSheet.create 
 
@@ -42,26 +45,31 @@ export function createStylesheet(opts: Options = defaultOptions): Stylesheet {
     view: createViewStyle(shf, opts),
     text: createTextStyles(shf, opts)}
 
-  function sh(...vs: Style[]): NativeStyles[] { 
+  function sh(...vs) { 
     return vs.map(v => ensureObjOrKv(v, styles.view, styles.text))}
 
-  sh.vw = (...vs: ViewStyle[]): NativeStyles[] => {
-    return vs.map(v => ensureObjOrKv(v, styles.view))}
+  sh.all = (...vs) => {
+    return vs.reduce((acc, v) => acc.concat(Array.isArray(v) ? v : [v]), [])}
 
-  sh.txt = (...vs: TextStyle[]): NativeStyles[] => {
-    return vs.map(v => ensureObjOrKv(v, styles.text))}
+  sh.vw = (...vs) => {
+    return vs.reduce((acc, v) => acc.concat(Array.isArray(v) ? sh.vw(...v) : ensureObjOrKv(v, styles.view)), 
+                     [])}
+
+  sh.txt = (...vs) => {
+    return vs.reduce((acc, v) => acc.concat(Array.isArray(v) ? sh.txt(...v) : ensureObjOrKv(v, styles.text)), 
+                     [])}
 
   return sh}
 
 // styles can either be a key and we get their stylesheet value 
 // or they can be a style object and we return it as it is.
 function ensureObjOrKv(v: string | object | boolean, ...objs: object[]) {
-  if (!v || typeof v === "object" || typeof v === "boolean") return v 
+  if (!v || typeof v === "object" || typeof v === "boolean" || typeof v === "number") return v 
   const kv = l.some(objs, o => o[v])
   if (!kv) throw Error(`Stylesheet key "${v}" does not exist`)
   return kv}
 
-// ### View stylesheet factory
+// ### View Stylesheet Factory
 
 export type ViewStyleKey = (FlexStyleKey | 
                             PositionStyleKey |
@@ -70,7 +78,7 @@ export type ViewStyleKey = (FlexStyleKey |
                             BorderStyleKey | 
                             OpacityStyleKey)
 
-export type ViewStyles = (FlexStyles | 
+export type ViewStyleObj = (FlexStyles | 
                           PositionStyles |
                           DimensionStyles |
                           SpacingStyles | 
@@ -78,7 +86,7 @@ export type ViewStyles = (FlexStyles |
                           OpacityStyles)
 
 export function createViewStyle(shf: StylesheetFactory, 
-                                opts: Options): ViewStyles {
+                                opts: Options): ViewStyleObj {
   const flexStyles   = createFlexStyles(shf),
         posStyles    = createPositionStyles(shf, opts.rem),
         dimStyles    = createDimensionStyles(shf, opts.rem),
@@ -92,19 +100,18 @@ export function createViewStyle(shf: StylesheetFactory,
           ...borderStyles,
           ...opacStyles}}
 
-// ### Text stylesheet factory
+// ### Text Stylesheet Factory
 
 export type TextStyleKey = (FontStyleKey)
 
-export type TextStyles = (FontStyles)
+export type TextStyleObj = (FontStyles)
 
 export function createTextStyles(shf: StylesheetFactory, 
-                                 opts: Options): TextStyles {
+                                 opts: Options): TextStyleObj {
   const fontStyles = createFontStyles(shf, opts.rem)
   return {...fontStyles}}
 
-// ### View and Text stylesheet modules
-
+// ### View and Text Stylesheet Factories
 
 /* Flex styles (view only) */
 

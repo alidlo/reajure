@@ -1,3 +1,9 @@
-export {h} from "react-hype"
-export * from "./comps"
-export * from "./styles"
+import {h, createComponents, createStylesheet} from "./core"
+
+const sh = createStylesheet()
+const c = createComponents(sh)
+
+c.lbl({textStyle: sh.txt("fs2")}, "wow")
+c.lbl({textStyle: sh("fs2")}, "wow")
+
+export {h, c, sh}
