@@ -39,7 +39,7 @@
     "react-native-web": "0.0.0-26873b469"
   },
   "dependencies": {
-    "react-hype": "^0.3.6"
+    "react-hype": "0.3.7"
   },
   "devDependencies": {
     "@react-native-community/bob": "^0.8.0",
