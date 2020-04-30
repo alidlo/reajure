@@ -3,19 +3,17 @@
     "lib": ["esnext", "dom"],
     "module": "esnext",
     "target": "esnext",
+    "jsx": "react",
+    "rootDirs": ["src", "stories", "test"],
     "moduleResolution": "node",
     "allowJs": false,
     "noImplicitAny": false,
     "esModuleInterop": false,
-    "allowSyntheticDefaultImports": false,
+    "allowSyntheticDefaultImports": true,
     "skipLibCheck": true
   },
   "exclude": [
     "dist",
     "node_modules"
-  ],
-  "include": [
-    "src",
-    "lib"
   ]
 }
