@@ -1,6 +1,6 @@
 {
   "name": "reajure",
-  "version": "0.3.6",
+  "version": "0.3.7",
   "main": "dist/commonjs/index.js",
   "module": "dist/module/index.js",
   "react-native": "src/index.ts",
