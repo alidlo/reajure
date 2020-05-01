@@ -6,7 +6,7 @@ import * as rn from "../native-deps"
 
 
 // ## Stylesheet Factory
-// note: `Style`, `ViewStyle` and `TextStyle` are optionally arrays because that's the only way
+// note: `Style`, `ViewStyle` and `TextStyle` are array types because that's the only way
 // there typings could be easily passed as props and consumed by the same `sh` factory helpers.
 
 export type StylesheetFactory = typeof StyleSheet["create"]
@@ -49,7 +49,8 @@ export function createStylesheet(opts: Options = defaultOptions): Stylesheet {
     return vs.map(v => ensureObjOrKv(v, styles.view, styles.text))}
 
   sh.all = (...vs) => {
-    return vs.reduce((acc, v) => acc.concat(Array.isArray(v) ? v : [v]), [])}
+    return vs.reduce((acc, v) => acc.concat(Array.isArray(v) ? sh(...v) : [sh(v)]), 
+                     [])}
 
   sh.vw = (...vs) => {
     return vs.reduce((acc, v) => acc.concat(Array.isArray(v) ? sh.vw(...v) : ensureObjOrKv(v, styles.view)), 
@@ -364,7 +365,7 @@ type BorderStyles = CustomStyle<BorderStyleKey>
 function createBorderStyles(style: StylesheetFactory, rem: number) {
   const nth = [0.125, 0.25, 0.5, 1, 2].map(n => n * rem)
   return style<BorderStyles>({
-    bw0:   {borderWidth: 1},
+    bw0:   {borderWidth: 0},
     bw1:   {borderWidth: 1},
     // bwT1:  {borderTopWidth: 1},
     // bwR1:  {borderRightWidth: 1},

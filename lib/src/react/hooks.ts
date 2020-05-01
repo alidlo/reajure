@@ -19,12 +19,10 @@ export const useCb = R.useCallback
 // ## React web only hooks
 
 export const useFocus = 
-  createPseudoHook({events: ["focus", "blur"],}) as 
-  (<T>(ref: R.MutableRefObject<T>) => boolean)
+  createPseudoHook({events: ["focus", "blur"],}) as (<T>(ref: R.MutableRefObject<T>) => boolean)
   
 export const useHover = 
-  createPseudoHook({events: ["mouseenter", "mouseleave"]}) as
-  (<T>(ref: R.MutableRefObject<T>) => boolean)
+  createPseudoHook({events: ["mouseenter", "mouseleave"]}) as (<T>(ref: R.MutableRefObject<T>) => boolean)
   
 function createPseudoHook
   <T>({events}: {events: string[]}): (ref: R.MutableRefObject<T>) => any {
