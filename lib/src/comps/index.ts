@@ -123,25 +123,25 @@ export type InputOptions = {style?: sh.ViewStyle,
                             textStyle: sh.TextStyle,
                             focusStyle?: sh.ViewStyle,
                             hoverStyle?: sh.ViewStyle}
-          
-export type InputProps = rn.TextInput["props"] & {style?: sh.ViewStyle,
-                                                  textStyle: sh.TextStyle,
-                                                  focusStyle?: sh.ViewStyle,
-                                                  hoverStyle?: sh.ViewStyle
-                                                  children?: TextChildren}
-            
+
+export type InputProps = Omit<rn.TextInput["props"], "children"> & 
+                         {style?: sh.ViewStyle,
+                          textStyle?: sh.TextStyle,
+                          focusStyle?: sh.ViewStyle,
+                          hoverStyle?: sh.ViewStyle}
+
 function createInput(sh: sh.Stylesheet, 
                      opts: InputOptions, 
                      {vw}: {vw: ReturnType<typeof createView>}) {
   const txtIpt = h.wrap(rn.TextInput)
-  return h<InputProps, TextChildren>((p, _ref) => {
+  return h<InputProps, undefined>(p => {
     const ref = r.useRef(),
-          [focus, setFocus] = r.useState(false),
+          [fcs, setFocus] = r.useState(false),
           hvr = r.useHover(ref),
           style = sh.vw(opts.style, 
                         p.style, 
                         ...l.arr(hvr && [opts.hoverStyle, p.hoverStyle]),
-                        ...l.arr(focus && [opts.focusStyle, p.focusStyle])),
+                        ...l.arr(fcs && [opts.focusStyle, p.focusStyle])),
           onFocus = (e) => {
             setFocus(true)
             p.onFocus && p.onFocus(e)},
@@ -153,5 +153,4 @@ function createInput(sh: sh.Stylesheet,
       txtIpt({...p, 
               onFocus,
               onBlur,
-              style: sh.all(opts.textStyle, p.textStyle)}, 
-             p.children))})}
+              style: sh.all(opts.textStyle, p.textStyle)}))})}
