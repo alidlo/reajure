@@ -14,7 +14,7 @@
     "react-native"
   ],
   "scripts": {
-    "watch": "tsc -b -w tsconfig.build.json",
+    "watch": "tsc -b -w tsconfig.dev.json",
     "storybook": "start-storybook",
     "prepare": "del dist && bob build"
   },
