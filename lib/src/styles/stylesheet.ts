@@ -68,16 +68,22 @@ export function createStylesheet(opts: Options = defaultOptions) {
   
   /**
    * Create dynamic styles `ds` with given `props`.
+   * 
    * Accepts 2D style array where first index is static styles and second index is dynamic styles. 
    * Dynamic styles can be object of style conditions (i.e. `sm` or `hover`) resolved based on `props`
    * or a style function that gets called with `props`. 
-   * i.e. [["h1"], {lg: ["h2"]}]
+   * i.e. [["h1"], {lg: ["h2"]}] 
+   * 
+   * Dynamic styles must be second index, if no static styles are needed just pass empty array. 
+   * i.e. [[], {hover: ["h1"]}]
    */
   sh.useStyle = (ds, props) => {
-    if (!Array.isArray(ds) || ds.length > 2) throw Error("Dynamic style must be valid array.")
-    const [a1, a2] = ds 
-    if (!(isStaticStyle(a1) || isDynamicStyleArg(a1)) || !(!!a2 && isDynamicStyleArg(a2))) {
-      throw Error("Invalid dynamic style declaration.")}
+    if (!ds) return []
+    else if (Array.isArray(ds) && (ds.length === 0 || !Array.isArray(ds[0]))) { // Only static Styles.
+      return ds}
+    if (!(Array.isArray(ds) && ds.length <= 2) || 
+        !(isStaticStyle(ds[0]) && (!ds[1] || isDynamicStyleArg(ds[1])))) {
+      throw Error("Invalid style hook declaration.")}
     return ds.reduce(
       (acc, v, i) => {
         if (i === 0 && isStaticStyle(v)) return acc.concat(v) // Static styles. 
@@ -86,7 +92,7 @@ export function createStylesheet(opts: Options = defaultOptions) {
             ? [v(props)]
             : l.reduceKv(v, 
                          (acc, k, v) => {
-                           if (props[k] === undefined) throw Error("Dynamic style condition not found.") 
+                           if (props[k] === undefined) throw Error("Style hook condition not found.") 
                            else if (!props[k]) return acc 
                            return acc.concat(v)
                          }, 
@@ -104,10 +110,10 @@ function ensureStyle(v: string | object | boolean, ...objs: object[]) {
   if (!kv) throw Error(`Stylesheet key "${v}" does not exist`)
   return kv}
 
-function isStaticStyle(v) { /** Check whether value `v` is a valid static style declaration. */
+function isStaticStyle(v) { /** Check whether value `v` could be a valid static style declaration. */
   return Array.isArray(v)}
 
-function isDynamicStyleArg(v) { /** Check whether value `v` is a valid dynamic style argument. */
+function isDynamicStyleArg(v) { /** Check whether value `v` is valid dynamic style argument. */
   return typeof v !== "object" || typeof v !== "function"} 
 
 // ### View Stylesheet Factory

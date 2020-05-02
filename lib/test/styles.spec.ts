@@ -11,12 +11,15 @@ describe("sh", () => {
       .toThrow("Stylesheet key \"foo\" does not exist")})
     
   describe("sh.useStyle", () => {
+    it("resolves only static style", () => {
+      expect(sh.useStyle(["m1"],{}))
+        .toEqual(["m1"])})
+
     it("resolves dynamic style condition", () => {
-      expect(sh.useStyle([["h1"], {lg: ["h2"]}], {lg: true}))
-        .toEqual(["h1", "h2"])})
+      expect(sh.useStyle([["m1"], {lg: ["m2"]}], {lg: true}))
+        .toEqual(["m1", "m2"])})
 
     it("throws error if condition is not found", () => {
       expect(() => sh.useStyle([["h1"], {lg: ["h2"]}], {}))
-        .toThrow("Dynamic style condition not found.")})
-    
+        .toThrow("Style hook condition not found.")})
   })})

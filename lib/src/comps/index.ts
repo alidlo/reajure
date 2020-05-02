@@ -41,12 +41,6 @@ function createView(sh: sh.Stylesheet,
   return h.fwd((p, ref) => vw({...p, ref, style: sh.all(opts.style, p.style)}, 
                               p.children))}
 
-const s = h(p => {
-  const style = sh.useStyle(p)
-
-  return null as any
-})
-
 // ### Text Component
   
 export type TextOptions = {style?: sh.TextStyle}
@@ -125,16 +119,15 @@ function createAnchor(sh: sh.Stylesheet,
          
 // ### Input Component 
          
-export type InputOptions = {style?: sh.ViewStyle,
+export type InputOptions = {style?: any, // sh.ViewStyle,
                             textStyle: sh.TextStyle,
-                            focusStyle?: sh.ViewStyle,
-                            hoverStyle?: sh.ViewStyle}
+                            // focusStyle?: sh.ViewStyle,
+                            // hoverStyle?: sh.ViewStyle
+                          }
 
-export type InputProps = Omit<rn.TextInput["props"], "children"> & 
-                         {style?: sh.ViewStyle,
-                          textStyle?: sh.TextStyle,
-                          focusStyle?: sh.ViewStyle,
-                          hoverStyle?: sh.ViewStyle}
+export type InputProps = Omit<rn.TextInput["props"], "style" | "children"> & 
+                         {style?: any, // sh.ViewStyle,
+                          textStyle?: sh.TextStyle}
 
 function createInput(sh: sh.Stylesheet, 
                      opts: InputOptions, 
@@ -142,12 +135,11 @@ function createInput(sh: sh.Stylesheet,
   const txtIpt = h.wrap(rn.TextInput)
   return h<InputProps, undefined>(p => {
     const ref = r.useRef(),
-          [fcs, setFocus] = r.useState(false),
-          hvr = r.useHover(ref),
-          style = sh.vw(opts.style, 
-                        p.style, 
-                        ...l.arr(hvr && [opts.hoverStyle, p.hoverStyle]),
-                        ...l.arr(fcs && [opts.focusStyle, p.focusStyle])),
+          [focus, setFocus] = r.useState(false),
+          hover = r.useHover(ref),
+          conds = {focus, hover},
+          style = sh.all(sh.useStyle(opts.style, conds),
+                         sh.useStyle(p.style, conds)),
           onFocus = (e) => {
             setFocus(true)
             p.onFocus && p.onFocus(e)},
