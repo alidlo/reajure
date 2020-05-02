@@ -4,6 +4,7 @@ import {StyleSheet,
 import * as l from "../lang"
 import * as r from "../react"
 import * as rn from "../native-deps"
+import {useMemo} from "../react"
 
 // ## Stylesheet Factory
 
@@ -97,6 +98,9 @@ export function createStylesheet(_opts?: Options) {
       (acc, v) => acc.concat(Array.isArray(v) ? sh.txt(...v) : ensureStyle(v, styles.text)), 
       [])}
   
+  // TODO memoize style input 
+  // TODO memoize breakpoints
+
   /**
    * Create dynamic style `ds` with given `props`.
    * 
@@ -116,20 +120,24 @@ export function createStylesheet(_opts?: Options) {
     conds: Record<K, boolean> = {} as any
   ): Style => {
     const bps = useActiveBreakpoints(opts.breakpoints)
-    if (!ds || !isDynamicStyle(ds)) return (ds as Style) || []
-    else if (!(isStaticStyle(ds[0]) && (!ds[1] || isDynamicStyleCond(ds[1])))) {
-      throw Error("Invalid style hook declaration.")}
-    const [style, condStyles] = ds as DynamicStyleValue,
-          dynamicStyles = typeof condStyles === "function" 
-            ? l.arr(condStyles(conds))
-            :  l.reduceKv(
-              (acc: Style[], k, v) => {
-                if (k === "media") return acc.concat(getBreakpointStyles(bps, v))
-                else if (conds[k] !== undefined) return acc.concat(v)
-                throw Error(`Style hook condition "${k}" not found.`)}, 
-        condStyles as CondStyleObj<K>, 
-              [])
-    return [...l.arr(style), ...dynamicStyles] as Style}
+    return r.useMemo(
+      () => {
+        if (!ds || !isDynamicStyle(ds)) return (ds as Style) || []
+        else if (!(isStaticStyle(ds[0]) && (!ds[1] || isDynamicStyleCond(ds[1])))) {
+          throw Error("Invalid style hook declaration.")}
+        const [style, condStyles] = ds as DynamicStyleValue,
+              dynamicStyles = typeof condStyles === "function" 
+                ? l.arr(condStyles(conds))
+                :  l.reduceKv(
+                  (acc: Style[], k, v) => {
+                    if (k === "media") return acc.concat(getBreakpointStyles(bps, v))
+                    else if (conds[k] !== undefined) return acc.concat(v)
+                    throw Error(`Style hook condition "${k}" not found.`)}, 
+            condStyles as CondStyleObj<K>, 
+                  [])
+        return [...l.arr(style), ...dynamicStyles] as Style},
+      // Only recompute if largest breakpoint width changed.
+      [bps[bps.length - 1]])}
   return sh}
 
 /**
@@ -138,8 +146,10 @@ export function createStylesheet(_opts?: Options) {
  */ 
 function useActiveBreakpoints(bpr: Record<Breakpoint, number>) {
   const dims = r.useDimensions()
-  return l.some(["xl", "lg", "md", "sm"], 
-                (k, i, arr) => dims.window.width >= bpr[k] && arr.slice(i, arr.length).reverse()) ||[]}
+  return r.useMemo(
+    () => l.some(["xl", "lg", "md", "sm"], 
+                 (k, i, arr) => dims.window.width >= bpr[k] && arr.slice(i, arr.length).reverse()) ||[],
+    [dims.window.width])}
 
 /**
  * Extracts styles of active breakpoints `bps` from style conditions `sc`.
@@ -278,16 +288,16 @@ function createPositionStyles(shf: StylesheetFactory, rem: number) {
 /* Dimension styles (view only) */
 
 type DimensionStyleKey = ("h1"   | "h2"   | "h3"   | "h4"   | "h5" |
-                        "mxh1" | "mxh2" |"mxh3"  |"mxh4"  | "mxh5" |
-                        "mnh1" | "mnh2" | "mnh3" | "mnh4" | "mnh5" |
-                        "w1"   | "w2"   | "w3"   | "w4"   | "w5" |
-                        "mxw1" | "mxw2" | "mxw3" | "mxw4" | "mxw5" |
-                        "mnw1" | "mnw2" | "mnw3" | "mnw4" | "mnw5")
+                          "mxh1" | "mxh2" |"mxh3"  |"mxh4"  | "mxh5" |
+                          "mnh1" | "mnh2" | "mnh3" | "mnh4" | "mnh5" |
+                          "w1"   | "w2"   | "w3"   | "w4"   | "w5"   | "w6"   |
+                          "mxw1" | "mxw2" | "mxw3" | "mxw4" | "mxw5" | "mxw6" |
+                          "mnw1" | "mnw2" | "mnw3" | "mnw4" | "mnw5" | "mnw6")
 
 type DimensionStyles = CustomStyle<DimensionStyleKey>
     
 function createDimensionStyles(shf: StylesheetFactory, rem: number) {
-  const nth = [1, 2, 4, 8, 16].map(n => n * rem)
+  const nth = [1, 2, 4, 8, 16, 32].map(n => n * rem)
   return shf<DimensionStyles>({
     /* heights */
 
@@ -317,18 +327,21 @@ function createDimensionStyles(shf: StylesheetFactory, rem: number) {
     w3: {width: nth[2]},
     w4: {width: nth[3]},
     w5: {width: nth[4]},
-    
+    w6: {width: nth[5]},
+
     mxw1: {maxWidth: nth[0]},
     mxw2: {maxWidth: nth[1]},
     mxw3: {maxWidth: nth[2]},
     mxw4: {maxWidth: nth[3]},
     mxw5: {maxWidth: nth[4]},
+    mxw6: {maxWidth: nth[5]},
     
     mnw1: {minWidth: nth[0]},
     mnw2: {minWidth: nth[1]},
     mnw3: {minWidth: nth[2]},
     mnw4: {minWidth: nth[3]},
-    mnw5: {minWidth: nth[4]}})}
+    mnw5: {minWidth: nth[4]},
+    mnw6: {minWidth: nth[5]},})}
 
 /* Spacing styles (view only) */
 
