@@ -19,6 +19,10 @@ const defaultOpts = {vw: {},
                      lnk: {},
                      ipt: {}}
 
+/**
+ * Create component `c` kit.
+ * Accepts stylesheet `sh` and component `opts`.
+*/
 export function createComponents(sh: sh.Stylesheet, 
                                  _opts?: Options) {
   const opts = {...(defaultOpts || {}), ..._opts}
