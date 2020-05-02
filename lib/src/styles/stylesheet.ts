@@ -28,47 +28,87 @@ export type TextStyle = TextStyleOption | TextStyleOption[]
 export type StyleOption = (StyleKey | StyleObj | NativeStyles | boolean)
 export type Style = StyleOption | StyleOption[]
 
-export type Stylesheet = 
-  {(...vs: Style[]): NativeStyles[]
-   all:  (...vs: Style[]) => NativeStyles[] 
-   vw:  (...vs: ViewStyle[]) => NativeStyles[]
-   txt: (...vs: TextStyle[]) => NativeStyles[]}
-   
+export type Stylesheet = ReturnType<typeof createStylesheet>
+
 type Options = {rem: number}
    
 export const defaultOptions = {rem: 16}
-   
-export function createStylesheet(opts: Options = defaultOptions): Stylesheet {
+
+/**
+ * Creates stylesheet `sh` for generating RNW styles. 
+ */
+export function createStylesheet(opts: Options = defaultOptions) {
   const shf: StylesheetFactory = rn.StyleSheet.create 
 
   const styles = {
     view: createViewStyle(shf, opts),
     text: createTextStyles(shf, opts)}
 
+  /** Create View and Text styles. */
   function sh(...vs) { 
-    return vs.map(v => ensureObjOrKv(v, styles.view, styles.text))}
+    return vs.map(v => ensureStyle(v, styles.view, styles.text))}
 
-  sh.all = (...vs) => {
-    return vs.reduce((acc, v) => acc.concat(Array.isArray(v) ? sh(...v) : [sh(v)]), 
-                     [])}
+  /** Flatten styles, intended to be used when composing style arrays in props. */
+  sh.all = (...vs: Style[]): NativeStyles[] => { 
+    return vs.reduce<NativeStyles[]>(
+      (acc, v) => acc.concat(Array.isArray(v) ? sh(...v) : [sh(v)]), 
+      [])}
+  
+  /** Create RN View styles. */
+  sh.vw = (...vs: ViewStyle[]): NativeStyles[] => { 
+    return vs.reduce<NativeStyles[]>(
+      (acc, v) => acc.concat(Array.isArray(v) ? sh.vw(...v) : ensureStyle(v, styles.view)), 
+      [])}
 
-  sh.vw = (...vs) => {
-    return vs.reduce((acc, v) => acc.concat(Array.isArray(v) ? sh.vw(...v) : ensureObjOrKv(v, styles.view)), 
-                     [])}
-
-  sh.txt = (...vs) => {
-    return vs.reduce((acc, v) => acc.concat(Array.isArray(v) ? sh.txt(...v) : ensureObjOrKv(v, styles.text)), 
-                     [])}
+  /** Create RN Text styles. */
+  sh.txt = (...vs: TextStyle[]): NativeStyles[] => { 
+    return vs.reduce<NativeStyles[]>(
+      (acc, v) => acc.concat(Array.isArray(v) ? sh.txt(...v) : ensureStyle(v, styles.text)), 
+      [])}
+  
+  /**
+   * Create dynamic styles `ds` with given `props`.
+   * Accepts 2D style array where first index is static styles and second index is dynamic styles. 
+   * Dynamic styles can be object of style conditions (i.e. `sm` or `hover`) resolved based on `props`
+   * or a style function that gets called with `props`. 
+   * i.e. [["h1"], {lg: ["h2"]}]
+   */
+  sh.useStyle = (ds, props) => {
+    if (!Array.isArray(ds) || ds.length > 2) throw Error("Dynamic style must be valid array.")
+    const [a1, a2] = ds 
+    if (!(isStaticStyle(a1) || isDynamicStyleArg(a1)) || !(!!a2 && isDynamicStyleArg(a2))) {
+      throw Error("Invalid dynamic style declaration.")}
+    return ds.reduce(
+      (acc, v, i) => {
+        if (i === 0 && isStaticStyle(v)) return acc.concat(v) // Static styles. 
+        return acc.concat(
+          typeof v === "function" 
+            ? [v(props)]
+            : l.reduceKv(v, 
+                         (acc, k, v) => {
+                           if (props[k] === undefined) throw Error("Dynamic style condition not found.") 
+                           else if (!props[k]) return acc 
+                           return acc.concat(v)
+                         }, 
+                         [])
+        )},
+      [])}
 
   return sh}
 
-// styles can either be a key and we get their stylesheet value 
-// or they can be a style object and we return it as it is.
-function ensureObjOrKv(v: string | object | boolean, ...objs: object[]) {
+/** Ensure value `v` is valid style; if it's a key must exist in given `objs`. */
+function ensureStyle(v: string | object | boolean, ...objs: object[]) {
+  // If style is falsy or an object (in RNW object styles are returned as numbers) we return as is.
   if (!v || typeof v === "object" || typeof v === "boolean" || typeof v === "number") return v 
   const kv = l.some(objs, o => o[v])
   if (!kv) throw Error(`Stylesheet key "${v}" does not exist`)
   return kv}
+
+function isStaticStyle(v) { /** Check whether value `v` is a valid static style declaration. */
+  return Array.isArray(v)}
+
+function isDynamicStyleArg(v) { /** Check whether value `v` is a valid dynamic style argument. */
+  return typeof v !== "object" || typeof v !== "function"} 
 
 // ### View Stylesheet Factory
 
@@ -80,11 +120,11 @@ export type ViewStyleKey = (FlexStyleKey |
                             OpacityStyleKey)
 
 export type ViewStyleObj = (FlexStyles | 
-                          PositionStyles |
-                          DimensionStyles |
-                          SpacingStyles | 
-                          BorderStyles | 
-                          OpacityStyles)
+                            PositionStyles |
+                            DimensionStyles |
+                            SpacingStyles | 
+                            BorderStyles | 
+                            OpacityStyles)
 
 export function createViewStyle(shf: StylesheetFactory, 
                                 opts: Options): ViewStyleObj {

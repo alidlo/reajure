@@ -11,10 +11,13 @@ export function arr<T>(v?: T | T[]): T[] {
  * 
  * Passes callback to every key-value pair in an object.
  */
-export function reduceKv(o: object, cb: Function) {
+export function reduceKv
+  <T extends Object = {}>(o: object, 
+                          cb: (acc: T, k: string, v: any, i: number) => any,
+                          initial: any = {}): T {
   return Object.keys(o).reduce(
-    (acc, k) => cb(acc, k, o[k]), 
-    {})}
+    (acc, k, i) => cb(acc, k, o[k], i), 
+    initial)}
 
 /**
  * Get first truthy value in an array.

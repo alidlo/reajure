@@ -40,7 +40,13 @@ function createView(sh: sh.Stylesheet,
   const vw = h.wrap(rn.View)
   return h.fwd((p, ref) => vw({...p, ref, style: sh.all(opts.style, p.style)}, 
                               p.children))}
-  
+
+const s = h(p => {
+  const style = sh.useStyle(p)
+
+  return null as any
+})
+
 // ### Text Component
   
 export type TextOptions = {style?: sh.TextStyle}
