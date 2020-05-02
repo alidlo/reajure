@@ -16,7 +16,14 @@
   "scripts": {
     "watch": "tsc -b -w tsconfig.dev.json",
     "storybook": "start-storybook",
-    "prepare": "del dist && bob build"
+    "prepare": "del dist && bob build",
+    "test": "jest",
+    "test.watch": "jest --watch --coverage=false --changedSince=origin/master",
+    "test.debug": "jest -o --watch --coverage=false"
+  },
+  "jest": {
+    "preset": "jest-expo",
+    "testRegex": "/test/.*\\.spec.ts$"
   },
   "@react-native-community/bob": {
     "source": "src",
@@ -51,7 +58,9 @@
     "@types/react": "^16.9.34",
     "@types/react-native": "^0.62.4",
     "babel-loader": "^8.1.0",
+    "babel-preset-expo": "^8.1.0",
     "del-cli": "^3.0.0",
+    "jest-expo": "^37.0.0",
     "react": "^16.9.0",
     "react-docgen-typescript-loader": "^3.7.2",
     "react-dom": "^16.9.0",
