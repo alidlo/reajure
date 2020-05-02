@@ -29,17 +29,28 @@ export type TextStyle = TextStyleValue | TextStyleValue[]
 export type StyleValue = (StyleKey | StyleObj | NativeStyles | boolean)
 export type Style = StyleValue | StyleValue[]
 
-export type DynamicStyleObj<CondKey extends string = string> =
-   Record<CondKey, Style> & {media?: Record<Breakpoint, Style>}
+export type CondStyleObjValue
+  <CondKey extends string = string> = Record<CondKey, Style | Record<string, Style>>
 
-export type DynamicStyleFn<CondKey extends string = string> =
-  (args: Record<CondKey, boolean>) => Style
+export type CondStyleObj
+  <CondKey extends string = string,
+   CondObj = CondStyleObjValue<CondKey>> = CondObj
 
-export type DynamicStyleValue<CondKey extends string = string> =
-  DynamicStyleObj<CondKey> | DynamicStyleFn<CondKey> 
+export type CondStyleFn
+  <CondKey extends string = string> = (args: Record<CondKey, boolean>) => Style
 
-export type DynamicStyle<CondKey extends string = string> = 
-  Style | [Style/*static style*/, DynamicStyleValue<CondKey>]
+export type CondStyleValue
+  <CondKey extends string = string,
+   CondObj = CondStyleObjValue<CondKey>> = CondObj | CondStyleFn<CondKey> 
+
+export type DynamicStyleValue 
+  <CondKey extends string = string,
+   CondObj = CondStyleObjValue<CondKey>> = [Style/*static style, required,*/, 
+                                            CondStyleValue<CondKey, CondObj>]
+
+export type DynamicStyle
+  <CondKey extends string = string,
+   CondObj = CondStyleObjValue<CondKey>> = Style | DynamicStyleValue<CondKey, CondObj>
 
 export type Stylesheet = ReturnType<typeof createStylesheet>
 
@@ -101,27 +112,23 @@ export function createStylesheet(_opts?: Options) {
    * i.e. {hover, focus} -> [hoverStyle, focusStyle] 
    */
   sh.useStyle = <K extends string = string>(
-    ds: DynamicStyle<K>, 
-    conds: Record<K, boolean>
+    ds: DynamicStyle<K, Record<K, Style> & {media?: Record<Breakpoint, Style>}>, 
+    conds: Record<K, boolean> = {} as any
   ): Style => {
     const bps = useActiveBreakpoints(opts.breakpoints)
-    if (!ds) return []
-    else if (Array.isArray(ds) && (ds.length === 0 || !Array.isArray(ds[0]))) { // Only static styles.
-      return ds as Style}
-    if (!(Array.isArray(ds) && ds.length <= 2) || 
-        !(isStaticStyle(ds[0]) && (!ds[1] || isDynamicStyleArg(ds[1])))) {
+    if (!ds || !isDynamicStyle(ds)) return (ds as Style) || []
+    else if (!(isStaticStyle(ds[0]) && (!ds[1] || isDynamicStyleCond(ds[1])))) {
       throw Error("Invalid style hook declaration.")}
-    const [style, condStyles] = ds
-    const dynamicStyles = typeof condStyles === "function" 
-      ? l.arr(condStyles(conds))
-      :  l.reduceKv(
-        (acc: Style[], k, v) => {
-          if (k === "media") return acc.concat(getBreakpointStyles(bps, v))
-          else if (conds[k] !== undefined) return acc.concat(v)
-          throw Error(`Style hook condition "${k}" not found.`) 
-        }, 
-        condStyles as DynamicStyleObj<any>, 
-        [])
+    const [style, condStyles] = ds as DynamicStyleValue,
+          dynamicStyles = typeof condStyles === "function" 
+            ? l.arr(condStyles(conds))
+            :  l.reduceKv(
+              (acc: Style[], k, v) => {
+                if (k === "media") return acc.concat(getBreakpointStyles(bps, v))
+                else if (conds[k] !== undefined) return acc.concat(v)
+                throw Error(`Style hook condition "${k}" not found.`)}, 
+        condStyles as CondStyleObj<K>, 
+              [])
     return [...l.arr(style), ...dynamicStyles] as Style}
   return sh}
 
@@ -150,10 +157,13 @@ function ensureStyle(v: string | object | boolean, ...objs: object[]) {
   if (!kv) throw Error(`Stylesheet key "${v}" does not exist`)
   return kv}
 
-function isStaticStyle(v) { /** Check whether value `v` could be a valid static style declaration. */
-  return Array.isArray(v)}
+function isStaticStyle(v) { /** Check whether value `v` *could* be a valid static style declaration. */
+  return typeof v !== "object" || Array.isArray(v)}
 
-function isDynamicStyleArg(v) { /** Check whether value `v` is valid dynamic style argument. */
+function isDynamicStyle(v) { /** Check whether value `v` is dynamic style declaration. */
+  return Array.isArray(v) && Array.isArray(v[0]) && v.length <= 2}
+
+function isDynamicStyleCond(v) { /** Check whether value `v` is valid dynamic style argument. */
   return typeof v !== "object" || typeof v !== "function"} 
 
 // ### View Stylesheet Factory
