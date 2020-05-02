@@ -11,3 +11,5 @@ export {default as  Linking} from "react-native-web/dist/cjs/exports/Linking"
 // TODO: RNGH must transpile its code before we can use it in web with cljs.
 export {default as Touchable} from "react-native-web/dist/cjs/exports/TouchableOpacity"
 // export {BaseButton as Touchable} from "react-native-gesture-handler"
+
+export {default as Dimensions} from "react-native-web/dist/cjs/exports/Dimensions"

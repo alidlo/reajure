@@ -20,6 +20,6 @@ describe("sh", () => {
         .toEqual(["m1", "m2"])})
 
     it("throws error if condition is not found", () => {
-      expect(() => sh.useStyle([["h1"], {lg: ["h2"]}], {}))
+      expect(() => sh.useStyle([["h1"], {lg: ["h2"]}], {} as any))
         .toThrow("Style hook condition not found.")})
   })})

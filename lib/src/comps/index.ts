@@ -59,13 +59,13 @@ function createText(sh: sh.Stylesheet,
 // ### Button Component 
 
 export type ButtonOptions = {style?: sh.ViewStyle,
-  textStyle?: sh.TextStyle,
-  hoverStyle?: sh.ViewStyle}
+                             textStyle?: sh.TextStyle,
+                             hoverStyle?: sh.ViewStyle}
   
-  type ButtonProps = {onPress?: rn.Touchable["props"]["onPress"]
-  style?: sh.ViewStyle,
-  textStyle?: sh.TextStyle,
-  hoverStyle?: sh.ViewStyle}
+type ButtonProps = {onPress?: rn.Touchable["props"]["onPress"]
+                    style?: sh.ViewStyle,
+                    textStyle?: sh.TextStyle,
+                    hoverStyle?: sh.ViewStyle}
   
 function createButton(sh: sh.Stylesheet, 
                       opts: ButtonOptions,
@@ -124,10 +124,7 @@ function createAnchor(sh: sh.Stylesheet,
 // ### Input Component 
          
 export type InputOptions = {style?: any, // sh.ViewStyle,
-                            textStyle: sh.TextStyle,
-                            // focusStyle?: sh.ViewStyle,
-                            // hoverStyle?: sh.ViewStyle
-                          }
+                            textStyle: sh.TextStyle}
 
 export type InputProps = Omit<rn.TextInput["props"], "style" | "children"> & 
                          {style?: any, // sh.ViewStyle,
