@@ -1,6 +1,6 @@
 {
   "name": "reajure",
-  "version": "0.3.7",
+  "version": "0.3.8",
   "main": "dist/commonjs/index.js",
   "module": "dist/module/index.js",
   "react-native": "src/index.ts",
@@ -47,7 +47,7 @@
     "react-native-web": "0.0.0-26873b469"
   },
   "dependencies": {
-    "react-hype": "0.3.9"
+    "react-hype": "0.4.0"
   },
   "devDependencies": {
     "@babel/core": "^7.9.6",
