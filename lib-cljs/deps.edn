@@ -1,2 +1,2 @@
 {:paths ["src"]
- :deps [lilactown/helix {}]}
+ :defaul-deps {lilactown/helix   {:mvn/version "0.0.10"}}}

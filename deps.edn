@@ -1,1 +1,1 @@
-{:deps {reajure {:local/root "./lib-cljs"}}}
+{:deps {reajure/lib-cljs {:local/root "./lib-cljs"}}}
