@@ -53,7 +53,7 @@ export type DynamicStyle
   <CondKey extends string = string,
    CondObj = CondStyleObjValue<CondKey>> = Style | DynamicStyleValue<CondKey, CondObj>
 
-export type Stylesheet = ReturnType<typeof createStylesheet>
+export type Stylesheet = ReturnType<typeof createStyleSheet>
 
 type Breakpoint = "sm" | "md" | "lg" | "xl"
 
@@ -69,7 +69,7 @@ export const defaultOpts = {rem: 16,
 /**
  * Creates stylesheet `sh` for generating RNW styles. 
  */
-export function createStylesheet(_opts?: Options) {
+export function createStyleSheet(_opts?: Options) {
   const opts = {...defaultOpts, ..._opts}
   const shf: StylesheetFactory = rn.StyleSheet.create 
 

@@ -25,7 +25,7 @@ const defaultOpts = {vw: {},
 */
 export function createComponents(sh: sh.Stylesheet, 
                                  _opts?: Options) {
-  const opts = {...(defaultOpts || {}), ..._opts}
+  const opts = {...defaultOpts, ...(_opts || {})} as Options
 
   const vw  = createView(sh, opts.vw),
         txt = createText(sh, opts.txt),
