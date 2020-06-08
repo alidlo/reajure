@@ -1,14 +1,16 @@
-import {createStylesheet} from "../src/styles"
+import {createStyleSheet} from "../src/stylesheet"
 
-const sh = createStylesheet()
+const sh = createStyleSheet()
 
-describe("sh", () => {
-  it("gets stylesheet key value", () => {
-    expect(sh("flx1")).toEqual([{flex: 1}])})
-  
-  it("throws error if style does not exist", () => {
-    expect(() => sh("foo" as any))
-      .toThrow("Stylesheet key \"foo\" does not exist")})
+describe("stylesheet", () => {
+  describe("sh", () => {
+    it("gets stylesheet key value", () => {
+      expect(sh("flx1")).toEqual([{flex: 1}])})
+    
+    it("throws error if style does not exist", () => {
+      expect(() => sh("foo" as any))
+        .toThrow("Stylesheet key \"foo\" does not exist")})
+  })
     
   describe("sh.useStyle", () => {
     it("resolves only static style", () => {

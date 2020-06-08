@@ -1,6 +1,6 @@
 import * as R from "react"
 import * as RDOM from "react-dom"
-import * as rn from "../native-deps"
+import * as rn from "./native-deps"
 
 // ## React hooks
  

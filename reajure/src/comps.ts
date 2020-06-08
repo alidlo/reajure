@@ -1,17 +1,16 @@
 import {forwardRef} from "react"
 import {h} from "react-hype"
-import * as rn from "../native-deps"
-import * as r from "../react"
-import * as l from "../lang"
-import * as sh from "../styles/stylesheet"
+import * as rn from "./native-deps"
+import * as r from "./hooks.shared"
+import * as sh from "./stylesheet"
 
 // ## Component Factory
 
-type Options = {vw:  ViewOptions,
-                txt: TextOptions,
-                btn: ButtonOptions,
-                lnk: AnchorOptions,
-                ipt: InputOptions}
+type Options = {vw?:  ViewOptions,
+                txt?: TextOptions,
+                btn?: ButtonOptions,
+                lnk?: AnchorOptions,
+                ipt?: InputOptions}
                 
 const defaultOpts = {vw: {},
                      txt: {},
@@ -103,7 +102,7 @@ function createLabel(sh: sh.Stylesheet,
     return vw({style},
               txt({style: textStyle}, p.children))})}
       
-// ### Link Component
+// ### Anchor Component
 
 export type AnchorOptions = {style?: sh.TextStyle}
 
@@ -126,8 +125,8 @@ function createAnchor(sh: sh.Stylesheet,
          
 // ### Input Component 
          
-export type InputOptions = {style?: any, // sh.ViewStyle,
-                            textStyle: sh.TextStyle}
+export type InputOptions = {style?: sh.DynamicStyle,
+                            textStyle?: sh.DynamicStyle}
 
 export type InputProps = Omit<rn.TextInput["props"], "style" | "children"> & 
                          {style?: sh.DynamicStyle,

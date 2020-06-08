@@ -1,0 +1,4 @@
+{:paths ["src"]
+;;  :deps {lilactown/helix {:git/url "https://github.com/Lokeh/helix"
+;;                          :sha "48ce213177f19e621e8eae81db22e9df7e26b967"}}
+ }

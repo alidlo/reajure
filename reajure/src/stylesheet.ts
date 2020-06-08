@@ -1,10 +1,9 @@
 import {StyleSheet,
         ViewStyle as RnViewStyle, 
         TextStyle as RnTextStyle} from "react-native"
-import * as l from "../lang"
-import * as r from "../react"
-import * as rn from "../native-deps"
-import {useMemo} from "../react"
+import * as l from "./lang"
+import * as r from "./hooks.shared"
+import * as rn from "./native-deps"
 
 // ## Stylesheet Factory
 
@@ -126,14 +125,14 @@ export function createStyleSheet(_opts?: Options) {
         else if (!(isStaticStyle(ds[0]) && (!ds[1] || isDynamicStyleCond(ds[1])))) {
           throw Error("Invalid style hook declaration.")}
         const [style, condStyles] = ds as DynamicStyleValue,
-              dynamicStyles = typeof condStyles === "function" 
+              dynamicStyles       = typeof condStyles === "function" 
                 ? l.arr(condStyles(conds))
-                :  l.reduceKv(
+                : l.reduceKv(
                   (acc: Style[], k, v) => {
                     if (k === "media") return acc.concat(getBreakpointStyles(bps, v))
                     else if (conds[k] !== undefined) return acc.concat(v)
                     throw Error(`Style hook condition "${k}" not found.`)}, 
-            condStyles as CondStyleObj<K>, 
+                                      condStyles as CondStyleObj<K>, 
                   [])
         return [...l.arr(style), ...dynamicStyles] as Style},
       // Only recompute if largest breakpoint width changed.
@@ -224,7 +223,7 @@ export function createTextStyles(shf: StylesheetFactory,
 
 type FlexStyleKey =
   ("flx1" | "flxg1" | "flxdC" | "flxdR" | "flxdRR" | "flxdCR" | "flxW" |
-   "aiFS" | "aiC" | "aiFE" | "aisFS" | "aisC" | "aisFE" | "aisS" |
+   "aiFS" | "aiC" | "aiFE" | "asFS" | "asC" | "asFE" | "asS" |
    "jcFS" | "jcFE" | "jcC" | "jcSB" | "jcSA")
 
 type FlexStyles = CustomStyle<FlexStyleKey>
@@ -241,10 +240,10 @@ function createFlexStyles(shf: StylesheetFactory) {
     aiFS:    {alignItems: "flex-start"},
     aiC:     {alignItems: "center"},
     aiFE:    {alignItems: "flex-end"},
-    aisFS:   {alignSelf: "flex-start"},
-    aisC:    {alignSelf: "center"},
-    aisFE:   {alignSelf: "flex-end"},
-    aisS:    {alignSelf: "stretch"},
+    asFS:    {alignSelf: "flex-start"},
+    asC:     {alignSelf: "center"},
+    asFE:    {alignSelf: "flex-end"},
+    asS:     {alignSelf: "stretch"},
     jcFS:    {justifyContent: "flex-start"},
     jcFE:    {justifyContent: "flex-end"},
     jcC:     {justifyContent: "center"},

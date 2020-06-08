@@ -1,5 +1,5 @@
 import * as R from "react"
-import * as rn from "../native-deps"
+import * as rn from "./native-deps"
 
 export * from "./hooks"
 

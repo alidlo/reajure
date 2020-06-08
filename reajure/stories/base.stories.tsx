@@ -1,4 +1,7 @@
-import {c} from "../src"
+import {createComponents, createStyleSheet} from "../src"
+
+const sh = createStyleSheet()
+const c = createComponents(sh)
 
 export default {title: "Base Components"}
 
@@ -13,4 +16,3 @@ export const input = () => c.ipt({style: [["bw1", {borderColor: "transparent"}],
                                   placeholder: "Input"},)
 
 export const button = () => c.btn("Press me!")
-
