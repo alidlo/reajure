@@ -1,8 +1,9 @@
 #  Reajure (alpha)
 
-Reajure is a component library built on top of [React Native Web](https://github.com/necolas/react-native-web).
-
 The motivation for Reajure is to make Javascript/React UI application development more expressive.
+
+Reajure provides a component toolkit built on top of [React Native Web](https://github.com/necolas/react-native-web), uses shorthands for defining components and styles.
+
 
 The core [reajure](https://github.com/alidlo/reajure/tree/master/reajure) library is written in Typescript:
 

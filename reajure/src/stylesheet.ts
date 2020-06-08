@@ -6,10 +6,8 @@ import * as rn from "./native-deps"
 import * as l from "./lang"
 import {useDimensions} from "./hooks"
 
-// ## Stylesheet Factory
-
-// note: `Style`, `ViewStyle` and `TextStyle` are also array types of there values 
-// this makes it easy to compose their respective prop values inside components. 
+// note: `Style`, `ViewStyle` and `TextStyle` are accept array types of there values 
+// since that faciliates style composition inside components
 
 export type StylesheetFactory = typeof StyleSheet["create"]
 export type CustomStyle<Key extends string> = {[k in Key]: NativeStyles}
@@ -98,9 +96,6 @@ export function createStyleSheet(_opts?: Options) {
       (acc, v) => acc.concat(Array.isArray(v) ? sh.txt(...v) : ensureStyle(v, styles.text)), 
       [])}
   
-  // TODO memoize style input 
-  // TODO memoize breakpoints
-
   /**
    * Create dynamic style `ds` with given `props`.
    * 
@@ -175,6 +170,8 @@ function isDynamicStyle(v) { /** Check whether value `v` is dynamic style declar
 
 function isDynamicStyleCond(v) { /** Check whether value `v` is valid dynamic style argument. */
   return typeof v !== "object" || typeof v !== "function"} 
+
+// == Style Factories ==
 
 // ### View Stylesheet Factory
 

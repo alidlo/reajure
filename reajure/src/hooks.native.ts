@@ -1,6 +1,6 @@
-export * from "./hooks.shared"
+export * from "./hooks.common"
 
-// ## React web only hook mocks
+// ## Web only hooks (mocks)
 
 export const useFocus = () => {}
 export const useHover = () => {}

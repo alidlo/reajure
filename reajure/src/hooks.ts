@@ -2,9 +2,9 @@ import * as r from "react"
 import * as rdom from "react-dom"
 import * as rn from "./native-deps"
 
-export * from "./hooks.shared"
+export * from "./hooks.common"
 
-// ## React web only hooks
+// ## Web only hooks
 
 export const useFocus = 
   createPseudoHook({events: ["focus", "blur"],}) as (<T>(ref: r.MutableRefObject<T>) => boolean)

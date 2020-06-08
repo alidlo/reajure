@@ -1,10 +1,8 @@
-import {forwardRef} from "react"
+import * as r from "react"
 import {h} from "react-hype"
 import * as rn from "./native-deps"
-import * as r from "./hooks.shared"
 import * as sh from "./stylesheet"
-
-// ## Component Factory
+import {useHover} from "./hooks"
 
 type Options = {vw?:  ViewOptions,
                 txt?: TextOptions,
@@ -19,8 +17,7 @@ const defaultOpts = {vw: {},
                      ipt: {}}
 
 /**
- * Create component `c` kit.
- * Accepts stylesheet `sh` and component `opts`.
+ * Create components using given stylesheet `sh` and `opts`.
 */
 export function createComponents(sh: sh.Stylesheet, 
                                  _opts?: Options) {
@@ -31,10 +28,12 @@ export function createComponents(sh: sh.Stylesheet,
         btn = createButton(sh, opts.btn, {txt}),
         lbl = createLabel(sh, {vw, txt}),
         ipt = createInput(sh, opts.ipt, {vw}),
-        a   = createLink(sh, opts.lnk, {txt})
-  return {vw, txt, btn, lbl, ipt, a}}
-        
-// ### View Component 
+        lnk   = createLink(sh, opts.lnk, {txt})
+  return {vw, txt, btn, lbl, ipt, lnk}}
+
+// == Component Factories ==
+
+// ## View Component 
         
 export type ViewOptions = {style?: sh.DynamicStyle}
 
@@ -47,7 +46,7 @@ function createView(sh: sh.Stylesheet,
     return vw({...p, ref, style}, 
               p.children)})}
 
-// ### Text Component
+// ## Text Component
   
 export type TextOptions = {style?: sh.DynamicStyle}
 type TextChildren = string | string[]
@@ -61,7 +60,7 @@ function createText(sh: sh.Stylesheet,
     return txt({...p, ref, style}, 
                p.children)})}
 
-// ### Label Component
+// ## Label Component
                
 export type LabelProps = {style?: sh.DynamicStyle,
                           textStyle?: sh.DynamicStyle}
@@ -75,7 +74,7 @@ function createLabel(sh: sh.Stylesheet,
     return vw({style},
               txt({style: textStyle}, p.children))})}
       
-// ### Button Component 
+// ## Button Component 
               
 export type ButtonOptions = {style?:     sh.DynamicStyle,
                              textStyle?: sh.DynamicStyle}
@@ -92,7 +91,7 @@ function createButton(sh: sh.Stylesheet,
     (p) => {
       const 
         ref       = r.useRef(),
-        hvr       = r.useHover(ref),
+        hvr       = useHover(ref),
         style     = sh.all(sh.useStyle(opts.style), 
                            sh.useStyle(p.style)),
         textStyle = sh.all(sh.useStyle(opts.textStyle), 
@@ -102,7 +101,7 @@ function createButton(sh: sh.Stylesheet,
                   onPress: p.onPress}, 
                  txt({style: textStyle}, p.children))})}
 
-// ### Link Component
+// ## Link Component
 
 export type LinkOptions = {style?: sh.TextStyle}
 
@@ -113,7 +112,7 @@ function createLink(sh: sh.Stylesheet,
                     opts: LinkOptions, 
                     {txt}: {txt: ReturnType<typeof createText>}) {
   return h<LinkProps, string>(
-    forwardRef((p, ref) => {
+    r.forwardRef((p, ref) => {
       const style = sh.all(sh.useStyle(opts.style), 
                            sh.useStyle(p.style))
       return txt({ref,
@@ -123,7 +122,7 @@ function createLink(sh: sh.Stylesheet,
                   onPress: () => rn.Linking.openURL(p.href)},
                  p.children)}))}
          
-// ### Input Component 
+// ## Input Component 
          
 export type InputOptions = {style?: sh.DynamicStyle,
                             textStyle?: sh.DynamicStyle}
@@ -139,7 +138,7 @@ function createInput(sh: sh.Stylesheet,
   return h<InputProps, undefined>(p => {
     const ref = r.useRef(),
           [focus, setFocus] = r.useState(false),
-          hover             = r.useHover(ref),
+          hover             = useHover(ref),
           conds             = {hover, focus},
           style             = sh.all(sh.useStyle(opts.style, conds),
                                      sh.useStyle(p.style, conds)),
