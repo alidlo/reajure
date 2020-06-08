@@ -1,9 +1,10 @@
 import {StyleSheet,
         ViewStyle as RnViewStyle, 
         TextStyle as RnTextStyle} from "react-native"
-import * as l from "./lang"
-import * as r from "./hooks.shared"
+import * as r from "react"
 import * as rn from "./native-deps"
+import * as l from "./lang"
+import {useDimensions} from "./hooks"
 
 // ## Stylesheet Factory
 
@@ -144,7 +145,7 @@ export function createStyleSheet(_opts?: Options) {
  * i.e. ["sm", "md"]
  */ 
 function useActiveBreakpoints(bpr: Record<Breakpoint, number>) {
-  const dims = r.useDimensions()
+  const dims = useDimensions()
   return r.useMemo(
     () => l.some(["xl", "lg", "md", "sm"], 
                  (k, i, arr) => dims.window.width >= bpr[k] && arr.slice(i, arr.length).reverse()) ||[],
@@ -472,13 +473,13 @@ type BorderStyles = CustomStyle<BorderStyleKey>
 
 function createBorderStyles(style: StylesheetFactory, rem: number) {
   const nth = [0.125, 0.25, 0.5, 1, 2].map(n => n * rem)
+  nth.reduce(
+    (acc, n, i) => ({...acc, [`br${i + 1}`]: {borderRadius: n}}),
+    {br0: {borderRadius: 0}})
+
   return style<BorderStyles>({
     bw0:   {borderWidth: 0},
     bw1:   {borderWidth: 1},
-    // bwT1:  {borderTopWidth: 1},
-    // bwR1:  {borderRightWidth: 1},
-    // bwB1:  {borderBottomWidth: 1},
-    // bwL1:  {borderLeftWidth: 1},
     br0:  {borderRadius: 0},
     br1:  {borderRadius: nth[0]},
     br2:  {borderRadius: nth[1]},

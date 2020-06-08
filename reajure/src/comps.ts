@@ -9,7 +9,7 @@ import * as sh from "./stylesheet"
 type Options = {vw?:  ViewOptions,
                 txt?: TextOptions,
                 btn?: ButtonOptions,
-                lnk?: AnchorOptions,
+                lnk?: LinkOptions,
                 ipt?: InputOptions}
                 
 const defaultOpts = {vw: {},
@@ -31,7 +31,7 @@ export function createComponents(sh: sh.Stylesheet,
         btn = createButton(sh, opts.btn, {txt}),
         lbl = createLabel(sh, {vw, txt}),
         ipt = createInput(sh, opts.ipt, {vw}),
-        a   = createAnchor(sh, opts.lnk, {txt})
+        a   = createLink(sh, opts.lnk, {txt})
   return {vw, txt, btn, lbl, ipt, a}}
         
 // ### View Component 
@@ -60,16 +60,30 @@ function createText(sh: sh.Stylesheet,
                          sh.useStyle(p.style))
     return txt({...p, ref, style}, 
                p.children)})}
-                               
-// ### Button Component 
 
+// ### Label Component
+               
+export type LabelProps = {style?: sh.DynamicStyle,
+                          textStyle?: sh.DynamicStyle}
+                
+function createLabel(sh: sh.Stylesheet,
+                     {vw, txt}: {vw: ReturnType<typeof createView>,
+                                 txt: ReturnType<typeof createText>}) {
+  return h<LabelProps, TextChildren>(p => {
+    const style = sh.useStyle(p.style),
+          textStyle = sh.useStyle(p.textStyle)
+    return vw({style},
+              txt({style: textStyle}, p.children))})}
+      
+// ### Button Component 
+              
 export type ButtonOptions = {style?:     sh.DynamicStyle,
                              textStyle?: sh.DynamicStyle}
-  
-type ButtonProps = {onPress?:    rn.Touchable["props"]["onPress"]
-                    style?:      sh.DynamicStyle,
-                    textStyle?:  sh.DynamicStyle}
-  
+                            
+export type ButtonProps = {onPress?: rn.Touchable["props"]["onPress"]
+                           style?:      sh.DynamicStyle,
+                           textStyle?:  sh.DynamicStyle}
+              
 function createButton(sh: sh.Stylesheet, 
                       opts: ButtonOptions,
                       {txt}: {txt: ReturnType<typeof createView>}) {
@@ -87,32 +101,18 @@ function createButton(sh: sh.Stylesheet,
                   style,
                   onPress: p.onPress}, 
                  txt({style: textStyle}, p.children))})}
-          
-// ### Label Component
 
-export type LabelProps = {style?: sh.DynamicStyle,
-                          textStyle?: sh.DynamicStyle}
-        
-function createLabel(sh: sh.Stylesheet,
-                     {vw, txt}: {vw: ReturnType<typeof createView>,
-                                 txt: ReturnType<typeof createText>}) {
-  return h<LabelProps, TextChildren>(p => {
-    const style = sh.useStyle(p.style),
-          textStyle = sh.useStyle(p.textStyle)
-    return vw({style},
-              txt({style: textStyle}, p.children))})}
-      
-// ### Anchor Component
+// ### Link Component
 
-export type AnchorOptions = {style?: sh.TextStyle}
+export type LinkOptions = {style?: sh.TextStyle}
 
-export type AnchorProps = {style?: sh.DynamicStyle,
-                           href: string}
+export type LinkProps = {style?: sh.DynamicStyle,
+                         href: string}
   
-function createAnchor(sh: sh.Stylesheet, 
-                      opts: AnchorOptions, 
-                      {txt}: {txt: ReturnType<typeof createText>}) {
-  return h<AnchorProps, string>(
+function createLink(sh: sh.Stylesheet, 
+                    opts: LinkOptions, 
+                    {txt}: {txt: ReturnType<typeof createText>}) {
+  return h<LinkProps, string>(
     forwardRef((p, ref) => {
       const style = sh.all(sh.useStyle(opts.style), 
                            sh.useStyle(p.style))

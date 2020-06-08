@@ -1,38 +1,26 @@
-import * as R from "react"
-import * as RDOM from "react-dom"
+import * as r from "react"
+import * as rdom from "react-dom"
 import * as rn from "./native-deps"
 
-// ## React hooks
- 
-export {
-  useContext,
-  useRef,
-  useState,
-  useEffect,
-  useMemo,
-  useCallback,
-} from "react"
-
-export const useCtx = R.useContext
-export const useCb = R.useCallback
+export * from "./hooks.shared"
 
 // ## React web only hooks
 
 export const useFocus = 
-  createPseudoHook({events: ["focus", "blur"],}) as (<T>(ref: R.MutableRefObject<T>) => boolean)
+  createPseudoHook({events: ["focus", "blur"],}) as (<T>(ref: r.MutableRefObject<T>) => boolean)
   
 export const useHover = 
-  createPseudoHook({events: ["mouseenter", "mouseleave"]}) as (<T>(ref: R.MutableRefObject<T>) => boolean)
+  createPseudoHook({events: ["mouseenter", "mouseleave"]}) as (<T>(ref: r.MutableRefObject<T>) => boolean)
   
 function createPseudoHook
-  <T>({events}: {events: string[]}): (ref: R.MutableRefObject<T>) => any {
+  <T>({events}: {events: string[]}): (ref: r.MutableRefObject<T>) => any {
   return (ref) => {
     if (rn.Platform.OS !== "web") {
       return false}
   
-    const [isActive, setActive] = R.useState(false)
+    const [isActive, setActive] = r.useState(false)
 
-    R.useEffect(
+    r.useEffect(
       () => {
         const [eventIn, eventOut] = events
 
@@ -66,7 +54,7 @@ function createPseudoHook
 function getNode(ref) {
   try {
     let node = getNativeNode(ref)
-    if (node) node = RDOM.findDOMNode(node)
+    if (node) node = rdom.findDOMNode(node)
     return node}
   catch (error) {
     console.error("Couldn't find node", error, {ref})
