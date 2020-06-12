@@ -4,8 +4,6 @@ import * as rn from "../../impl/native-deps"
 import * as sh from "../styles"
 import * as vd from "../vdom"
 
-// 1. touchable needs nested view
-// 2. add focus and, for button, press, event. 
 // 3. move breakpoint of of useStyle.
 // ## View Component 
         
@@ -43,7 +41,7 @@ export type LabelProps = Omit<rn.View["props"], "style" | "children"> &
                 
 export function createLabel(sh: sh.Stylesheet,
                             {vw, txt}: {vw: ReturnType<typeof createView>,
-                                 txt: ReturnType<typeof createText>}) {
+                                        txt: ReturnType<typeof createText>}) {
   return h<LabelProps, TextChildren>(p => {
     const style = sh.useStyle(p.style),
           textStyle = sh.useStyle(p.textStyle)
@@ -54,7 +52,6 @@ export function createLabel(sh: sh.Stylesheet,
               
 export type ButtonOptions = {style?:     sh.DynamicStyle,
                              textStyle?: sh.DynamicStyle}
-
 
 export type ButtonProps = Omit<rn.TouchableWithoutFeedback["props"], "style" | "children"> &  
                           {style?:      sh.DynamicStyle,
@@ -144,6 +141,8 @@ export function createInput(sh: sh.Stylesheet,
           onBlur = (e) => {
             setFocus(false)
             p.onBlur && p.onBlur(e)}
+    console.log("input!!")
+    console.log(style)
     return vw({ref, style},
               txtIpt({...p, 
                       onFocus,

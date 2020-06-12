@@ -18,11 +18,21 @@ describe("stylesheet", () => {
       const {result} = rh(() => sh.useStyle(["m1"],{}))
       expect(result.current).toEqual(["m1"])})
 
-    it("resolves dynamic style condition", () => {
-      const {result} = rh(() => sh.useStyle([["m1"], {hover: ["m2"]}], {hover: true}))
+    it("resolves active style condition", () => {
+      const {result} = rh(() => sh.useStyle([["m1"], {x: ["m2"]}], {x: true}))
       expect(result.current).toEqual(["m1", "m2"])})
+
+    it("resolves active, nested style condition", () => {
+      const {result} = rh(() => sh.useStyle([["m1"], {nested: {x: ["m2"], y: ["m3"]}}], {nested: {y: true}}))
+      expect(result.current).toEqual(["m1", "m3"])})
             
-    it.only("throws error if condition is not found", () => {
-      const {result} = rh(() => sh.useStyle([["h1"], {hover: ["h2"]}], {} as any))
-      expect(() => result.current).toThrow("Style hook condition \"hover\" not found.")})
-  })})
+    it("throws error if condition is not found", () => {
+      const {result} = rh(() => sh.useStyle([["h1"], {x: ["h2"]}], {} as any))
+      expect(() => result.current).toThrow("Style hook condition \"x\" not found.")})})
+    
+  // describe("sh.useMediaStyle", () => {
+  // it("resolves nested dynamic style condition", () => {
+  //   expect(sh.useMediaStyle([["m1"], {media: {lg: ["m2"]}}], {media: {lg: true}}))
+  //     .toEqual(["m1", "m2"])})
+  // })
+})

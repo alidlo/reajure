@@ -14,9 +14,9 @@ export function arr<T>(v?: T | T[]): T[] {
  * Passes callback to every key-value pair in an object.
  */
 export function reduceKv
-  <T extends Object = {}>(cb: (acc: T, k: string, v: any, i: number) => any,
-                          o: object, 
-                          initial: any = {}): T {
+  <T = any>(cb: (acc: T, k: string, v: any, i: number) => any,
+            initial: T,
+            o: object): T {
   return Object.keys(o).reduce(
     (acc, k, i) => cb(acc, k, o[k], i), 
     initial)}

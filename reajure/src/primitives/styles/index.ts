@@ -10,32 +10,35 @@ import {NativeStyles,
         createTextStyles, 
         createViewStyle} from "./factories"
 
-export {ViewStyle, TextStyle}
+export {Style, ViewStyle, TextStyle}
 export type StylesheetFactory = typeof StyleSheet["create"]
 export type CustomStyle<Key extends string> = {[k in Key]: NativeStyles}
 
-export type CondStyleObjValue
-  <CondKey extends string = string> = Record<CondKey, Style | Record<string, Style>>
+type CondStyleInput
+  <InputKey extends string = string> = Record<InputKey, boolean | Record<string, boolean>>
 
-export type CondStyleObj
+type CondStyleObjVal
+  <CondKey extends string = string> = Record<CondKey, Style | Record<CondKey, Style>>
+
+type CondStyleObj
   <CondKey extends string = string,
-   CondObj = CondStyleObjValue<CondKey>> = CondObj
+   CondObj = CondStyleObjVal<CondKey>> = CondObj
 
-export type CondStyleFn
-  <CondKey extends string = string> = (args: Record<CondKey, boolean>) => Style
+type CondStyleFn
+  <CondKey extends string = string> = (args: CondStyleInput<CondKey>) => Style
 
-export type CondStyleValue
+type CondStyleVal
   <CondKey extends string = string,
-   CondObj = CondStyleObjValue<CondKey>> = CondObj | CondStyleFn<CondKey> 
+   CondObj = CondStyleObjVal<CondKey>> = CondObj | CondStyleFn<CondKey> 
 
-export type DynamicStyleValue 
+type DynamicStyleVal 
   <CondKey extends string = string,
-   CondObj = CondStyleObjValue<CondKey>> = [Style/*static style, required,*/, 
-                                            CondStyleValue<CondKey, CondObj>]
+   CondObj = CondStyleObjVal<CondKey>> = [Style/*static style, required,*/, 
+                                          CondStyleVal<CondKey, CondObj>]
 
 export type DynamicStyle
   <CondKey extends string = string,
-   CondObj = CondStyleObjValue<CondKey>> = Style | DynamicStyleValue<CondKey, CondObj>
+   CondObj = CondStyleObjVal<CondKey>> = Style | DynamicStyleVal<CondKey, CondObj>
 
 export type Stylesheet = ReturnType<typeof createStyleSheet>
 
@@ -51,7 +54,8 @@ export const defaultOpts = {rem: 16,
                                           xl: 1280}}
 
 /**
- * Creates stylesheet `sh` for generating rnw styles. 
+ * Creates stylesheet `sh` for generating styles. 
+ * note: The exposed name is 'StyleSheet`, as two words, since that's how its named in React Native.
  */
 export function createStyleSheet(_opts?: Options) {
   const opts = {...defaultOpts, ..._opts}
@@ -60,109 +64,120 @@ export function createStyleSheet(_opts?: Options) {
   const styles = {view: createViewStyle(shf, opts.rem),
                   text: createTextStyles(shf, opts.rem)}
 
-  /** Create View and Text styles. */
+  /** 
+   * Create View and Text stylesheets. 
+   * */
   function sh(...vs: Style[]) { 
     return vs.map(v => ensureStyle(v, styles.view, styles.text))}
 
-  /** Flatten styles, intended to be used when composing style arrays in props. */
-  sh.all = (...vs: Style[]): NativeStyles[] => { 
+  /* Flatten styles, intended for composing style arrays. */
+  sh.all = (...vs: Style[]): NativeStyles[] => {
     return vs.reduce<NativeStyles[]>(
       (acc, v) => acc.concat(Array.isArray(v) ? sh(...v) : [sh(v)]), 
       [])}
   
-  /** Create RN View styles. */
+  /* Typed View styles. */ 
   sh.vw = (...vs: ViewStyle[]): NativeStyles[] => { 
     return vs.reduce<NativeStyles[]>(
       (acc, v) => acc.concat(Array.isArray(v) ? sh.vw(...v) : ensureStyle(v, styles.view)), 
       [])}
 
-  /** Create RN Text styles. */
-  sh.txt = (...vs: TextStyle[]): NativeStyles[] => { 
+  /* Typed Text styles. */
+  sh.txt = (...vs: TextStyle[]): NativeStyles[] => {
     return vs.reduce<NativeStyles[]>(
       (acc, v) => acc.concat(Array.isArray(v) ? sh.txt(...v) : ensureStyle(v, styles.text)), 
       [])}
   
   /**
-   * Create dynamic style `ds` with given `props`.
+   * Use list active breakpoints, ordered from smallest to largest (i.e. mobile-first). 
+   * By default uses breakpoint record `bpr` passed to StyleSheet factory options.
+   * i.e. ["sm", "md"]
+   **/ 
+  sh.useActiveBreakpoints = (bpr: Record<Breakpoint, number> = opts.breakpoints) => {
+    const dims = useDimensions()
+    return r.useMemo(
+      () => l.some(["xl", "lg", "md", "sm"], 
+                   (k, i, arr) => dims.window.width >= bpr[k] && arr.slice(i, arr.length).reverse()) ||[],
+      [dims.window.width])}
+
+  /**
+   * Use dynamic style `ds` with given conditions `conds`.
    * 
-   * Accepts 2D style array where first index is static styles and second index is dynamic styles. 
-   * Dynamic styles can be object of style conditions (i.e. `sm` or `hover`) resolved based on `props`
-   * or a style function that gets called with `props`. 
-   * i.e. [["h1"], {lg: ["h2"]}] 
+   * Style can be a one of: 
+   * 1) 1D array of static styles, e.g. ["flx1"]. 
+   * 2) 2D array of static and dynamic styles, e.g. [["flx1"] {hover: ["bw1"]}]
+   *    If no static styles are necessary, pass empty array, e.g. [[], {hover: ["bw1"]}]
    * 
-   * Conditional styles `cs` must be second index, if no static styles are needed just pass empty array. 
-   * i.e. [[], {hover: ["h1"]}]
+   * Dynamic style `conds` can be one of:  
+   * 1) a boolean, e.g. {hover: true})
+   * 2) a map of booleans, e.g. {media: {lg: true}}
    * 
-   * Styles conditions are returned in order they were inserted into their condition object. 
-   * i.e. {hover, focus} -> [hoverStyle, focusStyle] 
+   * Styles conditions are returned in order received.
+   * e.g. {hover, focus} -> [hoverStyle, focusStyle] 
+   * fyi: JS maps are ordered as long as keys are non-numbers. 
    */
-  sh.useStyle = <K extends string = string>(
+  sh.useStyle = 
+    <K extends string = string,
+     CondStyleVal = CondStyleObjVal<K>>(
+      ds: DynamicStyle<K, CondStyleVal>, 
+      conds: CondStyleInput<K> = {} as CondStyleInput<K>,
+      memoInputs: typeof flattenStyleCondVals = flattenStyleCondVals
+    ): Style => {
+      console.log({conds, memos:  memoInputs(conds)})
+      return r.useMemo(
+        () => { 
+          if (!ds || !isDynamicStyle(ds)) return (ds as Style) || []
+          else if (!(isStaticStyle(ds[0]) && (!ds[1] || isDynamicStyleCond(ds[1])))) {
+            throw Error("Invalid style hook declaration.")}
+          const [staticStyle, condStyles] = ds as DynamicStyleVal,
+                activeStyles       = typeof condStyles === "function" 
+                  ? l.arr(condStyles(conds))
+                  : l.reduceKv(
+                    (acc: Style[], k, v) => {
+                      const cond = conds[k]
+                      if (cond) return acc.concat(typeof cond == "object" ? extractCondStyles(cond, v) : v)
+                      else if (cond !== undefined) return acc
+                      else throw Error(`Style hook condition "${k}" not found.`)}, 
+                    [],
+                    condStyles as CondStyleObj<K>)
+          return [...l.arr(staticStyle), ...activeStyles] as Style
+        }, 
+        memoInputs(conds))
+    }
+
+  /**
+   * Use styles with `media` condition included in `conds`.
+   * See #sh.useStyles for usage details.
+   */
+  sh.useMediaStyle = <K extends string = string>(
     ds: DynamicStyle<K, Record<K, Style> & {media?: Record<Breakpoint, Style>}>, 
-    conds: Record<K, boolean> = {} as any
-  ): Style => {
-    // todo: bundled media into useStyle. oops.
-    const bps = useActiveBreakpoints(opts.breakpoints)
-    if (!ds || !isDynamicStyle(ds)) return (ds as Style) || []
-    else if (!(isStaticStyle(ds[0]) && (!ds[1] || isDynamicStyleCond(ds[1])))) {
-      throw Error("Invalid style hook declaration.")}
-    const [style, condStyles] = ds as DynamicStyleValue,
-          // x = console.log({style, condStyles}),
-          dynamicStyles       = typeof condStyles === "function" 
-            ? l.arr(condStyles(conds))
-            : l.reduceKv(
-              (acc: Style[], k, v) => {
-                // console.log({k, conds: conds[k]})
-                if (k === "media") return acc.concat(getBreakpointStyles(bps, v))
-                else if (conds[k]) return acc.concat(v)
-                else if (conds[k] !== undefined) return acc
-                else throw Error(`Style hook condition "${k}" not found.`)}, 
-                  condStyles as CondStyleObj<K>, 
-              [])
-    return [...l.arr(style), ...dynamicStyles] as Style
-    // return r.useMemo(
-    //   () => {
-    //     console.log({conds})
-    //     if (!ds || !isDynamicStyle(ds)) return (ds as Style) || []
-    //     else if (!(isStaticStyle(ds[0]) && (!ds[1] || isDynamicStyleCond(ds[1])))) {
-    //       throw Error("Invalid style hook declaration.")}
-    //     const [style, condStyles] = ds as DynamicStyleValue,
-    //           x = console.log({style, condStyles}),
-    //           dynamicStyles       = typeof condStyles === "function" 
-    //             ? l.arr(condStyles(conds))
-    //             : l.reduceKv(
-    //               (acc: Style[], k, v) => {
-    //                 console.log({k, conds: conds[k]})
-    //                 if (k === "media") return acc.concat(getBreakpointStyles(bps, v))
-    //                 else if (conds[k]) return acc.concat(v)
-    //                 else if (conds[k] !== undefined) return acc
-    //                 else throw Error(`Style hook condition "${k}" not found.`)}, 
-    //               condStyles as CondStyleObj<K>, 
-    //               [])
-    //     return [...l.arr(style), ...dynamicStyles] as Style},
-    //   // Only recompute if largest breakpoint width changed.
-    //   // todo: memo cond inputs
-    //   [bps[bps.length - 1], ...Object.values(conds)])
-  }
+    conds: CondStyleInput<K> = {} as CondStyleInput<K>
+  ) => {
+    const bps = sh.useActiveBreakpoints()
+    return sh.useStyle(ds, 
+                       {media: bps.reduce((acc, k) => ({...acc, [k]: true})),
+                        ...conds},
+                       ({media, ...inputs}) => {
+                         // Only recompute if largest breakpoint width changed
+                         // (Media map keys are ordered in order they were created from breakpoint list.)
+                         return [Object.keys(media)[bps.length - 1],
+                                 ...flattenStyleCondVals(inputs)]})}
+
   return sh}
 
-/**
- * Gets list active mobile-first breakpoints, ordered from smallest to largest. 
- * i.e. ["sm", "md"]
- */ 
-function useActiveBreakpoints(bpr: Record<Breakpoint, number>) {
-  const dims = useDimensions()
-  return r.useMemo(
-    () => l.some(["xl", "lg", "md", "sm"], 
-                 (k, i, arr) => dims.window.width >= bpr[k] && arr.slice(i, arr.length).reverse()) ||[],
-    [dims.window.width])}
 
-/**
- * Extracts styles of active breakpoints `bps` from style conditions `sc`.
- * Returned styles are ordered as per breakpoint array. 
-*/
-function getBreakpointStyles(bps: Breakpoint[], sc) {
-  return bps.reduce((acc, k) => !sc[k] ? acc : acc.concat(sc[k]),
-                    [])}
+/* Extracts nested style `condStyles` based on active conditions `conds`. */
+function extractCondStyles(conds: CondStyleInput, condStyles: CondStyleObj) {
+  return l.reduceKv(
+    (acc, k, v) => conds[k] ? acc.concat(l.arr(v)) : acc,
+    [],
+    condStyles)}
+
+function flattenStyleCondVals(conds: CondStyleInput): any[] {
+  return l.reduceKv(
+    (acc: any[], _, v) => acc.concat(typeof v === "object" ? Object.values(v) : [v]),
+    [],
+    conds)}
 
 /** Ensure value `v` is valid style; if it's a key must exist in given `objs`. */
 function ensureStyle(v: string | object | boolean, ...objs: object[]) {
