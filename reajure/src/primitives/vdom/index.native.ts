@@ -1,4 +1,4 @@
-export * from "./hooks.common"
+export * from "./common"
 
 // ## Web only hooks (mocks)
 

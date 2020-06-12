@@ -1,3 +1,3 @@
 export {h} from "react-hype"
-export {createComponents} from "./comps"
-export {createStyleSheet} from "./stylesheet"
+export {createComponents} from "./primitives/comps"
+export {createStyleSheet} from "./primitives/styles"

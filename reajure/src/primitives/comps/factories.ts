@@ -1,44 +1,15 @@
 import * as r from "react"
 import {h} from "react-hype"
-import * as rn from "./native-deps"
-import * as sh from "./stylesheet"
-import {useHover} from "./hooks"
-
-type Options = {vw?:  ViewOptions,
-                txt?: TextOptions,
-                btn?: ButtonOptions,
-                lnk?: LinkOptions,
-                ipt?: InputOptions}
-                
-const defaultOpts = {vw: {},
-                     txt: {},
-                     btn: {},
-                     lnk: {},
-                     ipt: {}}
-
-/**
- * Create components using given stylesheet `sh` and `opts`.
-*/
-export function createComponents(sh: sh.Stylesheet, 
-                                 _opts?: Options) {
-  const opts = {...defaultOpts, ...(_opts || {})} as Options
-
-  const vw  = createView(sh, opts.vw),
-        txt = createText(sh, opts.txt),
-        btn = createButton(sh, opts.btn, {txt}),
-        lbl = createLabel(sh, {vw, txt}),
-        ipt = createInput(sh, opts.ipt, {vw}),
-        lnk   = createLink(sh, opts.lnk, {txt})
-  return {vw, txt, btn, lbl, ipt, lnk}}
-
-// == Component Factories ==
+import * as rn from "../../impl/native-deps"
+import * as sh from "../styles"
+import * as vd from "../vdom"
 
 // ## View Component 
         
 export type ViewOptions = {style?: sh.DynamicStyle}
 
-function createView(sh: sh.Stylesheet, 
-                    opts: ViewOptions) {
+export function createView(sh: sh.Stylesheet, 
+                           opts: ViewOptions) {
   const vw = h.wrap(rn.View)
   return h.fwd((p, ref) => {
     const style = sh.all(sh.useStyle(opts.style), 
@@ -51,12 +22,13 @@ function createView(sh: sh.Stylesheet,
 export type TextOptions = {style?: sh.DynamicStyle}
 type TextChildren = string | string[]
 
-function createText(sh: sh.Stylesheet, 
-                    opts: TextOptions) {
+export function createText(sh: sh.Stylesheet, 
+                           opts: TextOptions) {
   const txt = h.wrap(rn.Text)
   return h.fwd((p, ref) => {
     const style = sh.all(sh.useStyle(opts.style), 
                          sh.useStyle(p.style))
+    console.log({txt: p.children})
     return txt({...p, ref, style}, 
                p.children)})}
 
@@ -65,12 +37,13 @@ function createText(sh: sh.Stylesheet,
 export type LabelProps = {style?: sh.DynamicStyle,
                           textStyle?: sh.DynamicStyle}
                 
-function createLabel(sh: sh.Stylesheet,
-                     {vw, txt}: {vw: ReturnType<typeof createView>,
+export function createLabel(sh: sh.Stylesheet,
+                            {vw, txt}: {vw: ReturnType<typeof createView>,
                                  txt: ReturnType<typeof createText>}) {
   return h<LabelProps, TextChildren>(p => {
     const style = sh.useStyle(p.style),
           textStyle = sh.useStyle(p.textStyle)
+    console.log({label: p.children})
     return vw({style},
               txt({style: textStyle}, p.children))})}
       
@@ -82,23 +55,39 @@ export type ButtonOptions = {style?:     sh.DynamicStyle,
 export type ButtonProps = {onPress?: rn.Touchable["props"]["onPress"]
                            style?:      sh.DynamicStyle,
                            textStyle?:  sh.DynamicStyle}
-              
-function createButton(sh: sh.Stylesheet, 
-                      opts: ButtonOptions,
-                      {txt}: {txt: ReturnType<typeof createView>}) {
+          
+// focus, blur, press
+export function createButton(sh: sh.Stylesheet, 
+                             opts: ButtonOptions,
+                             {txt}: {txt: ReturnType<typeof createView>}) {
   const tch = h.wrap(rn.Touchable)
   return h<ButtonProps, TextChildren>(
     (p) => {
       const 
         ref       = r.useRef(),
-        hvr       = useHover(ref),
-        style     = sh.all(sh.useStyle(opts.style), 
-                           sh.useStyle(p.style)),
-        textStyle = sh.all(sh.useStyle(opts.textStyle), 
-                           sh.useStyle(p.textStyle))
+        [focus, setFocus] = r.useState(false),
+        // focus     = useFocus(ref),
+        hover     = vd.useHover(ref),
+        conds     = {hover, focus},
+        style     = sh.all(sh.useStyle(opts.style, conds), 
+                           sh.useStyle(p.style, conds)),
+        textStyle = sh.all(sh.useStyle(opts.textStyle, conds), 
+                           sh.useStyle(p.textStyle, conds)),
+        onFocus = (e) => {
+          setFocus(true)
+          // p.onFocus && p.onFocus(e)
+        },
+        onBlur = (e) => {
+          setFocus(false)
+          // p.onBlur && p.onBlur(e)
+        }
+      // ah need a nested view for touchable without feedback. 
+      // TODO address this.
       return tch({ref,
                   style,
-                  onPress: p.onPress}, 
+                  onPress: p.onPress,
+                  onFocus,
+                  onBlur}, 
                  txt({style: textStyle}, p.children))})}
 
 // ## Link Component
@@ -108,9 +97,9 @@ export type LinkOptions = {style?: sh.TextStyle}
 export type LinkProps = {style?: sh.DynamicStyle,
                          href: string}
   
-function createLink(sh: sh.Stylesheet, 
-                    opts: LinkOptions, 
-                    {txt}: {txt: ReturnType<typeof createText>}) {
+export function createLink(sh: sh.Stylesheet, 
+                           opts: LinkOptions, 
+                           {txt}: {txt: ReturnType<typeof createText>}) {
   return h<LinkProps, string>(
     r.forwardRef((p, ref) => {
       const style = sh.all(sh.useStyle(opts.style), 
@@ -131,25 +120,28 @@ export type InputProps = Omit<rn.TextInput["props"], "style" | "children"> &
                          {style?: sh.DynamicStyle,
                           textStyle?: sh.DynamicStyle}
 
-function createInput(sh: sh.Stylesheet, 
-                     opts: InputOptions, 
-                     {vw}: {vw: ReturnType<typeof createView>}) {
+export function createInput(sh: sh.Stylesheet, 
+                            opts: InputOptions, 
+                            {vw}: {vw: ReturnType<typeof createView>}) {
   const txtIpt = h.wrap(rn.TextInput)
   return h<InputProps, undefined>(p => {
-    const ref = r.useRef(),
+    // console.log("here...")
+    const ref        = r.useRef(),
           [focus, setFocus] = r.useState(false),
-          hover             = useHover(ref),
-          conds             = {hover, focus},
-          style             = sh.all(sh.useStyle(opts.style, conds),
-                                     sh.useStyle(p.style, conds)),
-          textStyle         = sh.all(sh.useStyle(opts.textStyle, conds),
-                                     sh.useStyle(p.textStyle, conds)),
+          // focus      = useFocus(ref),
+          hover      = vd.useHover(ref),
+          conds      = {hover, focus},
+          style      = sh.all(sh.useStyle(opts.style, conds),
+                              sh.useStyle(p.style, conds)),
+          textStyle  = sh.all(sh.useStyle(opts.textStyle, conds),
+                              sh.useStyle(p.textStyle, conds)),
           onFocus = (e) => {
             setFocus(true)
             p.onFocus && p.onFocus(e)},
           onBlur = (e) => {
             setFocus(false)
             p.onBlur && p.onBlur(e)}
+    // console.log({hover, opts, style, textStyle})
     return vw({ref, style},
               txtIpt({...p, 
                       onFocus,

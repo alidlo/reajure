@@ -1,8 +1,8 @@
 import * as r from "react"
 import * as rdom from "react-dom"
-import * as rn from "./native-deps"
+import * as rn from "../../impl/native-deps"
 
-export * from "./hooks.common"
+export * from "./common"
 
 // ## Web only hooks
 
