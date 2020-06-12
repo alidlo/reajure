@@ -1,4 +1,4 @@
-import * as l from "../src/lang"
+import * as l from "../src/impl/lang"
 
 describe("l:some", () => {
   it("boolean: returns first true value", () => {
