@@ -4,6 +4,9 @@ import * as rn from "../../impl/native-deps"
 import * as sh from "../styles"
 import * as vd from "../vdom"
 
+// 1. touchable needs nested view
+// 2. add focus and, for button, press, event. 
+// 3. move breakpoint of of useStyle.
 // ## View Component 
         
 export type ViewOptions = {style?: sh.DynamicStyle}
@@ -19,7 +22,8 @@ export function createView(sh: sh.Stylesheet,
 
 // ## Text Component
   
-export type TextOptions = {style?: sh.DynamicStyle}
+export type TextOptions = Omit<rn.Text["props"], "style" | "children"> &  
+                          {style?: sh.DynamicStyle}
 type TextChildren = string | string[]
 
 export function createText(sh: sh.Stylesheet, 
@@ -28,13 +32,13 @@ export function createText(sh: sh.Stylesheet,
   return h.fwd((p, ref) => {
     const style = sh.all(sh.useStyle(opts.style), 
                          sh.useStyle(p.style))
-    console.log({txt: p.children})
     return txt({...p, ref, style}, 
                p.children)})}
 
 // ## Label Component
                
-export type LabelProps = {style?: sh.DynamicStyle,
+export type LabelProps = Omit<rn.View["props"], "style" | "children"> &  
+                         {style?: sh.DynamicStyle,
                           textStyle?: sh.DynamicStyle}
                 
 export function createLabel(sh: sh.Stylesheet,
@@ -43,52 +47,53 @@ export function createLabel(sh: sh.Stylesheet,
   return h<LabelProps, TextChildren>(p => {
     const style = sh.useStyle(p.style),
           textStyle = sh.useStyle(p.textStyle)
-    console.log({label: p.children})
-    return vw({style},
+    return vw({...p, style},
               txt({style: textStyle}, p.children))})}
       
 // ## Button Component 
               
 export type ButtonOptions = {style?:     sh.DynamicStyle,
                              textStyle?: sh.DynamicStyle}
-                            
-export type ButtonProps = {onPress?: rn.Touchable["props"]["onPress"]
-                           style?:      sh.DynamicStyle,
+
+
+export type ButtonProps = Omit<rn.TouchableWithoutFeedback["props"], "style" | "children"> &  
+                          {style?:      sh.DynamicStyle,
                            textStyle?:  sh.DynamicStyle}
           
-// focus, blur, press
 export function createButton(sh: sh.Stylesheet, 
                              opts: ButtonOptions,
-                             {txt}: {txt: ReturnType<typeof createView>}) {
+                             {vw, txt}: {vw: ReturnType<typeof createView>,
+                                         txt: ReturnType<typeof createText>}) {
   const tch = h.wrap(rn.Touchable)
-  return h<ButtonProps, TextChildren>(
-    (p) => {
-      const 
-        ref       = r.useRef(),
-        [focus, setFocus] = r.useState(false),
-        // focus     = useFocus(ref),
-        hover     = vd.useHover(ref),
-        conds     = {hover, focus},
-        style     = sh.all(sh.useStyle(opts.style, conds), 
-                           sh.useStyle(p.style, conds)),
-        textStyle = sh.all(sh.useStyle(opts.textStyle, conds), 
-                           sh.useStyle(p.textStyle, conds)),
-        onFocus = (e) => {
-          setFocus(true)
-          // p.onFocus && p.onFocus(e)
-        },
-        onBlur = (e) => {
-          setFocus(false)
-          // p.onBlur && p.onBlur(e)
-        }
-      // ah need a nested view for touchable without feedback. 
-      // TODO address this.
-      return tch({ref,
-                  style,
-                  onPress: p.onPress,
-                  onFocus,
-                  onBlur}, 
-                 txt({style: textStyle}, p.children))})}
+  return h<ButtonProps, TextChildren>(p => {
+    const 
+      ref               = r.useRef(),
+      [focus, setFocus] = r.useState(false),
+      [press, setPress] = r.useState(false),
+      hover             = vd.useHover(ref),
+      conds             = {hover, focus, press},
+      style             = sh.all(sh.useStyle(opts.style, conds), 
+                                 sh.useStyle(p.style, conds)),
+      textStyle         = sh.all(sh.useStyle(opts.textStyle, conds), 
+                                 sh.useStyle(p.textStyle, conds)),
+      onFocus = (e) => {
+        setFocus(true)
+        p.onFocus && p.onFocus(e)},
+      onBlur = (e) => {
+        setFocus(false)
+        p.onBlur && p.onBlur(e)},
+      onPressIn = (e) => {
+        setPress(true)},
+      onPressOut = (e) => {
+        setPress(false)}
+    return tch({onPress: p.onPress,
+                onPressIn,
+                onPressOut,
+                onFocus,
+                onBlur}, 
+               vw({ref, 
+                   style},
+                  txt({style: textStyle}, p.children)))})}
 
 // ## Link Component
 
@@ -125,10 +130,8 @@ export function createInput(sh: sh.Stylesheet,
                             {vw}: {vw: ReturnType<typeof createView>}) {
   const txtIpt = h.wrap(rn.TextInput)
   return h<InputProps, undefined>(p => {
-    // console.log("here...")
     const ref        = r.useRef(),
           [focus, setFocus] = r.useState(false),
-          // focus      = useFocus(ref),
           hover      = vd.useHover(ref),
           conds      = {hover, focus},
           style      = sh.all(sh.useStyle(opts.style, conds),
@@ -141,7 +144,6 @@ export function createInput(sh: sh.Stylesheet,
           onBlur = (e) => {
             setFocus(false)
             p.onBlur && p.onBlur(e)}
-    // console.log({hover, opts, style, textStyle})
     return vw({ref, style},
               txtIpt({...p, 
                       onFocus,
