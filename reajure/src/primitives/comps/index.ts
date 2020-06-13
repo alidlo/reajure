@@ -35,5 +35,5 @@ export function createComponents(sh: sh.Stylesheet,
         lbl = createLabel(sh, {vw, txt}),
         ipt = createInput(sh, opts.ipt, {vw}),
         btn = createButton(sh, opts.btn, {vw, txt}),
-        lnk   = createLink(sh, opts.lnk, {txt})
+        lnk = createLink(sh, opts.lnk, {txt})
   return {vw, txt, btn, lbl, ipt, lnk}}

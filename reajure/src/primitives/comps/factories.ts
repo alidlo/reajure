@@ -4,7 +4,8 @@ import * as rn from "../../impl/native-deps"
 import * as sh from "../styles"
 import * as vd from "../vdom"
 
-// 3. move breakpoint of of useStyle.
+// todo: using memo in useStyle computations but not when using sh.all for opts+prop composition
+
 // ## View Component 
         
 export type ViewOptions = {style?: sh.DynamicStyle}
@@ -141,9 +142,8 @@ export function createInput(sh: sh.Stylesheet,
           onBlur = (e) => {
             setFocus(false)
             p.onBlur && p.onBlur(e)}
-    console.log("input!!")
-    console.log(style)
-    return vw({ref, style},
+    return vw({ref, 
+               style},
               txtIpt({...p, 
                       onFocus,
                       onBlur,

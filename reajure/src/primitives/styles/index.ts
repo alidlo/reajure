@@ -71,6 +71,7 @@ export function createStyleSheet(_opts?: Options) {
     return vs.map(v => ensureStyle(v, styles.view, styles.text))}
 
   /* Flatten styles, intended for composing style arrays. */
+  // todo: flatten dynamic styles too? if not maybe warning when trying to flatten non-static styles
   sh.all = (...vs: Style[]): NativeStyles[] => {
     return vs.reduce<NativeStyles[]>(
       (acc, v) => acc.concat(Array.isArray(v) ? sh(...v) : [sh(v)]), 
@@ -118,32 +119,29 @@ export function createStyleSheet(_opts?: Options) {
    */
   sh.useStyle = 
     <K extends string = string,
-     CondStyleVal = CondStyleObjVal<K>>(
-      ds: DynamicStyle<K, CondStyleVal>, 
+     V = CondStyleVal<K>>(
+      ds: DynamicStyle<K, V>, 
       conds: CondStyleInput<K> = {} as CondStyleInput<K>,
-      memoInputs: typeof flattenStyleCondVals = flattenStyleCondVals
-    ): Style => {
-      console.log({conds, memos:  memoInputs(conds)})
+      memoInputs: typeof getMemoizeStyleInputs = getMemoizeStyleInputs
+    ): Style => { 
       return r.useMemo(
         () => { 
-          if (!ds || !isDynamicStyle(ds)) return (ds as Style) || []
+          if (!ds || !isDynamicStyle(ds)) {
+            return (ds as Style) || []}
           else if (!(isStaticStyle(ds[0]) && (!ds[1] || isDynamicStyleCond(ds[1])))) {
             throw Error("Invalid style hook declaration.")}
           const [staticStyle, condStyles] = ds as DynamicStyleVal,
                 activeStyles       = typeof condStyles === "function" 
                   ? l.arr(condStyles(conds))
                   : l.reduceKv(
-                    (acc: Style[], k, v) => {
-                      const cond = conds[k]
-                      if (cond) return acc.concat(typeof cond == "object" ? extractCondStyles(cond, v) : v)
-                      else if (cond !== undefined) return acc
-                      else throw Error(`Style hook condition "${k}" not found.`)}, 
+                    (acc: Style[], k, cond) => { 
+                      if (!cond) return acc 
+                      const x = condStyles[k]
+                      return acc.concat(l.arr(extractCondStyle(cond, x)))}, 
                     [],
-                    condStyles as CondStyleObj<K>)
-          return [...l.arr(staticStyle), ...activeStyles] as Style
-        }, 
-        memoInputs(conds))
-    }
+                    conds)
+          return [...l.arr(staticStyle), ...activeStyles] as Style},
+        memoInputs(ds, conds))}
 
   /**
    * Use styles with `media` condition included in `conds`.
@@ -157,27 +155,37 @@ export function createStyleSheet(_opts?: Options) {
     return sh.useStyle(ds, 
                        {media: bps.reduce((acc, k) => ({...acc, [k]: true})),
                         ...conds},
-                       ({media, ...inputs}) => {
+                       (ds, {media, ...inputs}) => {
                          // Only recompute if largest breakpoint width changed
                          // (Media map keys are ordered in order they were created from breakpoint list.)
                          return [Object.keys(media)[bps.length - 1],
-                                 ...flattenStyleCondVals(inputs)]})}
+                                 ...getMemoizeStyleInputs(ds, inputs)]})}
 
   return sh}
 
-
-/* Extracts nested style `condStyles` based on active conditions `conds`. */
-function extractCondStyles(conds: CondStyleInput, condStyles: CondStyleObj) {
+/* Extracts possible nested style `condStyles` based on active conditions `conds`. */
+function extractCondStyle(cond: boolean | CondStyleInput, condStyles: CondStyleVal<any, any>) {
+  if (typeof cond === "boolean" || (Array.isArray(cond) || typeof cond !== "object")) return condStyles
   return l.reduceKv(
-    (acc, k, v) => conds[k] ? acc.concat(l.arr(v)) : acc,
+    (acc, k, v) => {
+      // nested obj might be actual style object, e.g. [[], [{hover: {:background "blue"}}]]
+      // since nested style condition values are booleans we treat any object values here as styles.
+      if (typeof v === "object") return acc.concat(l.arr(v))
+      return v ? acc.concat(l.arr(condStyles[k])) : acc},
     [],
-    condStyles)}
+    cond)}
 
-function flattenStyleCondVals(conds: CondStyleInput): any[] {
-  return l.reduceKv(
-    (acc: any[], _, v) => acc.concat(typeof v === "object" ? Object.values(v) : [v]),
-    [],
-    conds)}
+/**
+ * Gets memo inputs for dynamic styles `ds` and conditions `conds`.
+ * Note: Only recomputing styles if their length changed. 
+ * This works well enough for shorthand styles (e.g. ["m2", "p1"]) but not objects (revisit if/when its an issue).
+ */
+function getMemoizeStyleInputs(ds: DynamicStyle<string, any>, conds: CondStyleInput): any[] {
+  const getStaticStyleLength = (x) => Array.isArray(x) ? (isDynamicStyle(x) ? getStaticStyleLength(x[0]) : x.length) : 1
+  return [getStaticStyleLength(ds),
+          ...l.reduceKv((acc: any[], _, v) => acc.concat(typeof v === "object" ? Object.values(v) : [v]),
+                        [],
+                        conds)]}
 
 /** Ensure value `v` is valid style; if it's a key must exist in given `objs`. */
 function ensureStyle(v: string | object | boolean, ...objs: object[]) {
@@ -195,4 +203,3 @@ function isDynamicStyle(v) { /** Check whether value `v` is dynamic style declar
 
 function isDynamicStyleCond(v) { /** Check whether value `v` is valid dynamic style argument. */
   return typeof v !== "object" || typeof v !== "function"} 
-
