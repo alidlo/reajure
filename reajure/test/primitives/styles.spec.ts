@@ -1,4 +1,4 @@
-import {createStyleSheet} from "../src/primitives/styles"
+import {createStyleSheet} from "../../src/primitives/styles"
 import {renderHook as rh} from "@testing-library/react-hooks"
 
 const sh = createStyleSheet()
