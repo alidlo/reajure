@@ -1,5 +1,5 @@
 import * as r from "react"
-import {h} from "react-hype"
+import {h} from "../hscript"
 import * as rn from "../../impl/native-deps"
 import * as sh from "../styles"
 import * as vd from "../vdom"

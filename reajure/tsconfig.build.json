@@ -5,9 +5,10 @@
     "outDir": "dist/typescript"
   },
   "exclude": [
-    "stories",
-    "test",
-    "dist",
     "node_modules",
+    "stories",
+    "dist",
+    "test",
+    "test-types"
   ]
 }
