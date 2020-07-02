@@ -7,9 +7,10 @@
     "declarationDir": "dist/typescript",
   },
   "exclude": [
+    "node_modules",
+    "dist",
     "stories",
     "test",
-    "dist",
-    "node_modules"
+    "test-types",
   ]
 }

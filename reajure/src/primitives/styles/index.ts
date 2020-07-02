@@ -3,14 +3,14 @@ import * as r from "react"
 import * as rn from "../../impl/native-deps"
 import * as l from "../../impl/lang"
 import {useDimensions} from "../vdom"
-import {NativeStyles, 
-        Style, 
-        ViewStyle,
-        TextStyle,
-        createTextStyles, 
+import {createTextStyles, 
         createViewStyle} from "./factories"
+import type {NativeStyles, 
+             Style, 
+             ViewStyle,
+             TextStyle} from "./factories"
 
-export {Style, ViewStyle, TextStyle}
+export type {Style, ViewStyle, TextStyle}
 export type StylesheetFactory = typeof StyleSheet["create"]
 export type CustomStyle<Key extends string> = {[k in Key]: NativeStyles}
 
@@ -19,10 +19,6 @@ type CondStyleInput
 
 type CondStyleObjVal
   <CondKey extends string = string> = Record<CondKey, Style | Record<CondKey, Style>>
-
-type CondStyleObj
-  <CondKey extends string = string,
-   CondObj = CondStyleObjVal<CondKey>> = CondObj
 
 type CondStyleFn
   <CondKey extends string = string> = (args: CondStyleInput<CondKey>) => Style
