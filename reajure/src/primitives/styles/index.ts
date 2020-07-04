@@ -178,10 +178,10 @@ function extractCondStyle(cond: boolean | CondStyleInput, condStyles: CondStyleV
  */
 function getMemoizeStyleInputs(ds: DynamicStyle<string, any>, conds: CondStyleInput): any[] {
   const getStaticStyleLength = (x) => Array.isArray(x) ? (isDynamicStyle(x) ? getStaticStyleLength(x[0]) : x.length) : 1
-  return [getStaticStyleLength(ds),
-          ...l.reduceKv((acc: any[], _, v) => acc.concat(typeof v === "object" ? Object.values(v) : [v]),
-                        [],
-                        conds)]}
+  const condsInputs = l.reduceKv((acc: any[], _, v) => acc.concat(typeof v === "object" ? Object.values(v) : [v]),
+                                 [],
+                                 conds)
+  return !Array.isArray(ds) ? [ds/*obj style*/, ...condsInputs] : [getStaticStyleLength(ds), ...condsInputs]}
 
 /** Ensure value `v` is valid style; if it's a key must exist in given `objs`. */
 function ensureStyle(v: string | object | boolean, ...objs: object[]) {

@@ -25,7 +25,13 @@ describe("stylesheet", () => {
     it("resolves active, nested style condition", () => {
       const {result} = rh(() => sh.useStyle([["m1"], {nested: {x: ["m2"], y: ["m3"]}}], {nested: {y: true}}))
       expect(result.current).toEqual(["m1", "m3"])})
-            
+          
+    it("resolves object style update", () => {
+      const {result, rerender} = rh((props) => sh.useStyle(props.style), {initialProps: {style: {margin: 0}}})
+      expect(result.current).toEqual({margin: 0})
+      rerender({style: {margin: 4}})
+      expect(result.current).toEqual({margin: 4}) 
+    })
   // describe("sh.useMediaStyle", () => {
   // it("resolves nested dynamic style condition", () => {
   //   expect(sh.useMediaStyle([["m1"], {media: {lg: ["m2"]}}], {media: {lg: true}}))
