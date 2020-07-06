@@ -55,7 +55,10 @@ export function createLabel(sh: sh.Stylesheet,
               txt({style: textStyle}, p.children))})}
       
 // ## Button Component 
-              
+           
+// fixme: provide Pressable typings until @types/react-native is updated.
+const Pressable = (rn as any).Pressable as typeof rn.TouchableWithoutFeedback
+
 export type ButtonOptions = {style?:     sh.DynamicStyle,
                              textStyle?: sh.DynamicStyle}
 
@@ -67,7 +70,7 @@ export function createButton(sh: sh.Stylesheet,
                              opts: ButtonOptions,
                              {vw, txt}: {vw: ReturnType<typeof createView>,
                                          txt: ReturnType<typeof createText>}) {
-  const tch = h.wrap(rn.Touchable)
+  const tch = h.wrap(Pressable)
   return h<ButtonProps, TextChildren>(p => {
     const 
       ref               = r.useRef(),
