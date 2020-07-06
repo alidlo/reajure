@@ -1,12 +1,12 @@
 import * as r from "react"
 import {h, Element} from "../hscript"
-import * as rn from "../../impl/native-deps"
 import * as sh from "../styles"
 import * as vd from "../vdom"
+import * as rn from "../../impl/native-deps"
 
 // todo: using memo in useStyle computations but not when using sh.all for opts+prop composition
 
-// ## View Component 
+// == View Component ==
         
 export type ViewOptions = {style?: sh.DynamicStyle}
 export type ViewProps = Omit<rn.View["props"], "style" | "children"> &  
@@ -15,13 +15,31 @@ export type ViewProps = Omit<rn.View["props"], "style" | "children"> &
 export function createView(sh: sh.Stylesheet, 
                            opts: ViewOptions) {
   const vw = h.wrap(rn.View)
-  return h.fwd<ViewProps, any>((p, ref) => {
+  return h.fwd<ViewProps, Element>((p, ref) => {
     const style = sh.all(sh.useStyle(opts.style), 
                          sh.useStyle(p.style))
     return vw({...p, ref, style}, 
               p.children)})}
 
-// ## Text Component
+// == Touch Component ==
+       
+// fixme: provide Pressable typings until @types/react-native is updated.
+const Pressable = (rn as any).Pressable as typeof rn.TouchableWithoutFeedback
+
+export type TouchOptions = {style?: sh.DynamicStyle}
+export type TouchProps = Omit<rn.TouchableWithoutFeedback["props"], "style" | "children"> &  
+                          {style?:      sh.DynamicStyle}
+
+export function createTouch(sh: sh.Stylesheet, 
+                            opts: TouchOptions) {
+  const tch = h.wrap(Pressable)
+  return h.fwd<TouchProps, Element>((p, ref) => {
+    const style = sh.all(sh.useStyle(opts.style), 
+                         sh.useStyle(p.style))
+    return tch({...p, ref, style}, 
+               p.children)})}
+              
+// == Text Component==
   
 export type TextOptions = Omit<rn.Text["props"], "style" | "children"> &  
                           {style?: sh.DynamicStyle}
@@ -39,7 +57,7 @@ export function createText(sh: sh.Stylesheet,
     return txt({...p, ref, style}, 
                p.children)})}
 
-// ## Label Component
+// == Label Component==
                
 export type LabelProps = Omit<rn.View["props"], "style" | "children"> &  
                          {style?: sh.DynamicStyle,
@@ -51,13 +69,10 @@ export function createLabel(sh: sh.Stylesheet,
   return h<LabelProps, TextChildren>(p => {
     const style = sh.useStyle(p.style),
           textStyle = sh.useStyle(p.textStyle)
-    return vw({...p, style},
+    return vw({...p as Omit<rn.View["props"], "children">, style},
               txt({style: textStyle}, p.children))})}
       
-// ## Button Component 
-           
-// fixme: provide Pressable typings until @types/react-native is updated.
-const Pressable = (rn as any).Pressable as typeof rn.TouchableWithoutFeedback
+// == Button Component ==
 
 export type ButtonOptions = {style?:     sh.DynamicStyle,
                              textStyle?: sh.DynamicStyle}
@@ -68,9 +83,11 @@ export type ButtonProps = Omit<rn.TouchableWithoutFeedback["props"], "style" | "
           
 export function createButton(sh: sh.Stylesheet, 
                              opts: ButtonOptions,
-                             {vw, txt}: {vw: ReturnType<typeof createView>,
-                                         txt: ReturnType<typeof createText>}) {
-  const tch = h.wrap(Pressable)
+                             {vw, 
+                              tch,
+                              txt}: {vw: ReturnType<typeof createView>,
+                                     tch: ReturnType<typeof createTouch>,
+                                     txt: ReturnType<typeof createText>}) {
   return h<ButtonProps, TextChildren>(p => {
     const 
       ref               = r.useRef(),
@@ -101,7 +118,7 @@ export function createButton(sh: sh.Stylesheet,
                    style},
                   txt({style: textStyle}, p.children)))})}
 
-// ## Link Component
+// == Link Component==
 
 export type LinkOptions = {style?: sh.TextStyle}
 
@@ -122,7 +139,7 @@ export function createLink(sh: sh.Stylesheet,
                   ...{href: p.href} as any},
                  p.children)}))}
          
-// ## Input Component 
+// == Input Component ==
          
 export type InputOptions = {style?: sh.DynamicStyle,
                             textStyle?: sh.DynamicStyle}
