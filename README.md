@@ -10,8 +10,7 @@ The core [reajure](https://github.com/alidlo/reajure/tree/master/reajure) librar
 const app = h<{msg: string}>(p => (
   c.vw({style: ["flx1"]}, 
     c.lbl({style: ["mb2"]}, p.msg),
-    c.lnk({href: "/docs"}, "Go to docs."))
-))
+    c.lnk({href: "/docs"}, "Go to docs."))))
 
 app({msg: "Welcome to Reajure.js!"})
 ```
@@ -30,7 +29,7 @@ To use Reajure in Clojurescript, [reajure-cljs](https://github.com/alidlo/reajur
 
 ## Usage 
 
-*Note*: This project is still very experimental so unless you're willing to dig into code I wouldn't recommend using it near-term for anything serious. On a similar note, the project is being optimized for ideal API and has not yet been optimized performance (we'll improve that as we run into limitations that make UI sluggish).
+*Note*: This project is still very experimental so unless you're willing to dig into code I wouldn't recommend using it near-term for anything serious. On a similar note, the project is being optimized for ideal API, not yet for performance (we'll improve that as we run into limitations that make UI sluggish).
 
 See the desired project's README for documentation.
 

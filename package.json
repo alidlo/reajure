@@ -3,7 +3,7 @@
   "workspaces": {
     "packages": [
       "demo",
-      "reajure"
+      "reajure-js"
     ]
   },
   "scripts": {
