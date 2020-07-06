@@ -1,8 +1,8 @@
 {
   "compilerOptions": {
-    "lib": ["esnext", "dom"],
-    "module": "esnext",
-    "target": "esnext",
+    "lib": ["dom"],
+    "module": "es6",
+    "target": "es6",
     "jsx": "react",
     "rootDirs": ["src", "stories", "test"],
     "moduleResolution": "node",

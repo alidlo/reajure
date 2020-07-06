@@ -1,6 +1,5 @@
 // Note: Some bundlers (i.e. Closure Compiler) don't perform tree-shaking on node_modules
 // so we're specific with the web imports to avoid bringing in RNW's 300kb bundle on all users.
-export {default as AppRegistry} from "react-native-web/dist/cjs/exports/AppRegistry"
 export {default as Platform} from "react-native-web/dist/cjs/exports/Platform"
 export {default as Dimensions} from "react-native-web/dist/cjs/exports/Dimensions"
 export {default as StyleSheet} from "react-native-web/dist/cjs/exports/StyleSheet"
