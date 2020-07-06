@@ -27,9 +27,10 @@ export type HComp /** Hyperscript component */
   <P   extends Props, 
    Ch  extends Children = P["children"] | Children,
    PCh = PropsWChildren<P, Ch>> = (a1?: PCh | Ch, ...a2: Ch[]) => any
+  & {displayName?: string}
   
-export type HFn /** Hyperscript component function declaration */
-  <PCh extends Props, 
+export type HFn /** Hyperscript component function declaration, e.g. h(() => ,,,) */
+  <PCh extends Props,
    Ref extends r.Ref<any> = r.Ref<any>> = (p: PCh, 
                                            ref?: Ref) => Element
 
@@ -100,7 +101,8 @@ h.fwd = function withForwardRef
    SP  = StaticProps,
    PCh = PropsWChildren<P, Ch>>(fn: HFn<PCh>, 
                                 sp?: SP): HComp<PCh> {
-  return h(r.forwardRef(fn) as any/*coerce*/, sp)}
+  //todo fwd components need names; here we need name of `fn`. 
+  return h(appendDisplayName("Reajure/h.fwd", r.forwardRef(fn) as any/*coerce*/), sp)}
 
 
 /**
@@ -138,7 +140,15 @@ h.wrap = function coerceExternalCompTypings
   Ref          extends r.Ref<ExternalComp> = r.Ref<ExternalComp>, 
   PChRf = PropsWChildren<P, Ch> & 
           {ref?: Ref}>(C: ExternalComp): HComp<PChRf, Ch> {
-  return h<P, Ch, {}, PChRf>(r.forwardRef((p, ref) => r.createElement(C, {...p, ref})) as any)}
+  // todo creating lots of wrapping.
+  return h.fwd(appendDisplayName("Reajure/h.wrap", (p, ref) => r.createElement(C, {...p, ref})))
+  // return h<P, Ch, {}, PChRf>(r.forwardRef((p, ref) => r.createElement(C, {...p, ref})) as any)
+}
+
+function appendDisplayName(s: string, comp: HComp<any>) {
+  (comp as any).displayName = `${s}__${(comp as any).displayName || "Anonymous"}`
+  return comp
+}
 
 function isChildren(v) { /* Check whether value `v` is valid React children type. */
   return typeof v === "string" || typeof v === "number" || Array.isArray(v) || r.isValidElement(v)}

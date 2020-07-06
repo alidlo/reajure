@@ -1,5 +1,5 @@
 import * as r from "react"
-import {h} from "../hscript"
+import {h, Element} from "../hscript"
 import * as rn from "../../impl/native-deps"
 import * as sh from "../styles"
 import * as vd from "../vdom"
@@ -9,11 +9,13 @@ import * as vd from "../vdom"
 // ## View Component 
         
 export type ViewOptions = {style?: sh.DynamicStyle}
+export type ViewProps = Omit<rn.View["props"], "style" | "children"> &  
+                        {style?: sh.DynamicStyle, ref?: r.Ref<any>} 
 
 export function createView(sh: sh.Stylesheet, 
                            opts: ViewOptions) {
   const vw = h.wrap(rn.View)
-  return h.fwd((p, ref) => {
+  return h.fwd<ViewProps, any>((p, ref) => {
     const style = sh.all(sh.useStyle(opts.style), 
                          sh.useStyle(p.style))
     return vw({...p, ref, style}, 
@@ -23,12 +25,15 @@ export function createView(sh: sh.Stylesheet,
   
 export type TextOptions = Omit<rn.Text["props"], "style" | "children"> &  
                           {style?: sh.DynamicStyle}
-type TextChildren = string | string[]
+
+export type TextProps = Omit<rn.Text["props"], "style" | "children"> &  
+                        {style?: sh.DynamicStyle, ref?: r.Ref<any>}
+type TextChildren = string
 
 export function createText(sh: sh.Stylesheet, 
                            opts: TextOptions) {
   const txt = h.wrap(rn.Text)
-  return h.fwd((p, ref) => {
+  return h.fwd<TextProps, TextChildren>((p, ref) => {
     const style = sh.all(sh.useStyle(opts.style), 
                          sh.useStyle(p.style))
     return txt({...p, ref, style}, 
@@ -110,8 +115,8 @@ export function createLink(sh: sh.Stylesheet,
       return txt({ref,
                   style,
                   accessibilityRole: "link",
-                  href: p.href,
-                  onPress: () => rn.Linking.openURL(p.href)},
+                  onPress: () => rn.Linking.openURL(p.href),
+                  ...{href: p.href} as any},
                  p.children)}))}
          
 // ## Input Component 
