@@ -1,10 +1,10 @@
 #  Reajure (alpha)
 
-The motivation for Reajure is to make Javascript/React UI application development more expressive.
+Reajure's aim is to make Javascript/React UI application development more expressive.
 
-Reajure provides a component toolkit built on top of [React Native Web](https://github.com/necolas/react-native-web) and uses shorthands for defining components and styles.
+Built on top of [React Native Web](https://github.com/necolas/react-native-web), Reajure provides a cross-platform component toolkit focused on functionality not styling, and with shorthands for all exported components and styles to minimize the boilerplate necessary for UI development.
 
-The core [reajure](https://github.com/alidlo/reajure/tree/master/reajure) library is written in Typescript:
+The core [reajure-js](https://github.com/alidlo/reajure/tree/master/reajure) library is written in Typescript:
 
 ```js
 const app = h<{msg: string}>(p => (
