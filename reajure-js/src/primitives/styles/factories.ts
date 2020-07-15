@@ -100,7 +100,6 @@ function createFlexStyles(shf: StylesheetFactory) {
 
 /* Position styles (view only) */
 
-
 type PositionStyleKey = ("posA" | "posA0" | 
 "tp0" | "tp1" | "tp2" | 
 "rt0" | "rt1" | "rt2" |
