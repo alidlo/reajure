@@ -4,8 +4,6 @@ import * as sh from "../styles"
 import * as vd from "../vdom"
 import * as rn from "../../impl/native-deps"
 
-// todo: using memo in useStyle computations but not when using sh.all for opts+prop composition
-
 // == View Component ==
         
 export type ViewOptions = {style?: sh.DynamicStyle}
@@ -57,7 +55,7 @@ export function createText(sh: sh.Stylesheet,
     return txt({...p, ref, style}, 
                p.children)})}
 
-// == Label Component==
+// == Label Component ==
                
 export type LabelProps = Omit<rn.View["props"], "style" | "children"> &  
                          {style?: sh.DynamicStyle,

@@ -15,7 +15,7 @@ export function createJsxComponents(...opts: Parameters<typeof createComponents>
     View: c.vw as React.ComponentType<ViewProps>,
     Text: c.txt as React.ComponentType<TextProps>,
     Label: c.lbl as React.ComponentType<LabelProps>, 
-    Button: c.lbl as React.ComponentType<ButtonProps>, 
+    Button: c.btn as React.ComponentType<ButtonProps>, 
   } 
 }
 

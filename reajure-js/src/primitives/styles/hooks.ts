@@ -52,7 +52,7 @@ export function createStyleHook() {
   <K extends string = string,
    V = CondStyleVal<K>>(ds: DynamicStyle<K, V>, 
                         conds: CondStyleInput<K> = {} as CondStyleInput<K>,
-                        memoInputs: typeof getMemoizeStyleInputs = getMemoizeStyleInputs): Style { 
+                        memoInputs: typeof getStyleMemoInputs = getStyleMemoInputs): Style { 
     return r.useMemo(
       () => { 
         if (!ds || !isDynamicStyle(ds)) {
@@ -89,7 +89,7 @@ export function createMediaStyleHook(opts: {useActiveBreakpoints: ReturnType<typ
         // Only recompute if largest breakpoint width changed
         // (Media map keys are ordered in order they were created from breakpoint list.)
         return [Object.keys(media)[bps.length - 1],
-                ...getMemoizeStyleInputs(ds, inputs)]})}}
+                ...getStyleMemoInputs(ds, inputs)]})}}
               
 /**
  * Hook to use list active breakpoints, ordered from smallest to largest (i.e. mobile-first). 
@@ -122,7 +122,7 @@ function extractCondStyle(cond: boolean | CondStyleInput, condStyles: CondStyleV
  * Note: Only recomputing styles if their length changed. 
  * This works well enough for shorthand styles (e.g. ["m2", "p1"]) but not objects (revisit if/when its an issue).
  */
-function getMemoizeStyleInputs(ds: DynamicStyle<string, any>, conds: CondStyleInput): any[] {
+function getStyleMemoInputs(ds: DynamicStyle<string, any>, conds: CondStyleInput): any[] {
   const getStaticStyleValues = (x) => isDynamicStyle(x) ? getStaticStyleValues(x[0]) : Object.values(x)
   const condsInputs = l.reduceKv((acc: any[], _, v) => acc.concat(typeof v === "object" ? Object.values(v) : [v]),
                                  [],
